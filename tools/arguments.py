@@ -47,12 +47,13 @@ def get_args():
     parser.add_argument('--resume', action='store_true')
     parser.add_argument('--debug_subset_size', type=int, default=8)
     parser.add_argument('--download', action='store_true', help="if can't find dataset, download from web")
-    parser.add_argument('--data_dir', type=str, default=os.getenv('DATA'))
-    parser.add_argument('--log_dir', type=str, default=os.getenv('LOG'))
-    parser.add_argument('--ckpt_dir', type=str, default=os.getenv('CHECKPOINT'))
+    parser.add_argument('--data_dir', type=str, default='../data')
+    parser.add_argument('--log_dir', type=str, default='../logs')
+    parser.add_argument('--ckpt_dir', type=str, default='../checkpoints')
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--eval_from', type=str, default=None)
     parser.add_argument('--hide_progress', action='store_true')
+
     parser.add_argument('--dist-url', default='127.0.0.1', type=str,
                             help='url used to set up distributed training')
     parser.add_argument('--world-size', default=-1, type=int,
@@ -66,6 +67,7 @@ def get_args():
                             help='distributed backend')
     parser.add_argument('--rank', default=-1, type=int,
                             help='node rank for distributed training')
+
     args = parser.parse_args()
 
 
@@ -75,6 +77,8 @@ def get_args():
                 vars(args)[key] = None
             else:
                 vars(args)[key] = value
+
+    vars(args)['start_epoch'] = 0
 
     if args.debug:
         if args.train: 
@@ -101,13 +105,14 @@ def get_args():
 
     assert not None in [args.log_dir, args.data_dir, args.ckpt_dir, args.name]
 
-    args.log_dir = os.path.join(args.log_dir, 'in-progress_'+datetime.now().strftime('%m%d%H%M%S_')+args.name)
+    # args.log_dir = os.path.join(args.log_dir, 'in-progress_' + datetime.now().strftime('%m%d%H%M%S_') + args.name)
 
-    os.makedirs(args.log_dir, exist_ok=False)
-    print(f'creating file {args.log_dir}')
-    os.makedirs(args.ckpt_dir, exist_ok=True)
+    # os.makedirs(args.log_dir, exist_ok=False)
+    # print(f'creating file {args.log_dir}')
+    # os.makedirs(args.ckpt_dir, exist_ok=True)
 
-    shutil.copy2(args.config_file, args.log_dir)
+    # shutil.copy2(args.config_file, args.log_dir)
+
     set_deterministic(args.seed)
 
 

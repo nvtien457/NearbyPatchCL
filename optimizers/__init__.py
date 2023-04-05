@@ -3,7 +3,7 @@ from .lars_simclr import LARS_simclr
 from .larc import LARC
 import torch
 from .lr_scheduler import LR_Scheduler
-
+import math
 
 def get_optimizer(name, model, lr, momentum, weight_decay):
 
@@ -40,4 +40,13 @@ def get_optimizer(name, model, lr, momentum, weight_decay):
     return optimizer
 
 
-
+def adjust_learning_rate(optimizer, epoch, args):
+    """Decay the learning rate based on schedule"""
+    lr = args.train.base_lr
+    if args.train.optimizer.cos:  # cosine lr schedule
+        lr *= 0.5 * (1. + math.cos(math.pi * epoch / args.train.num_epochs))
+    else:  # stepwise lr schedule
+        for milestone in args.train.optimizer.schedule:
+            lr *= 0.1 if epoch >= milestone else 1.
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
