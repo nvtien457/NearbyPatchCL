@@ -26,7 +26,6 @@ from optimizers import get_optimizer
 from tools import accuracy, get_args, Logger, AverageMeter
 
 def main(args):
-    # print(args)
 
     if args.seed is not None:
         random.seed(args.seed)
@@ -83,7 +82,13 @@ def main_worker(gpu, ngpus_per_node, args):
         dist.init_process_group(backend=args.dist_backend, store=dist.FileStore("./tmp/filestore", args.world_size),
                                 world_size=args.world_size, rank=args.rank)
 
-    # create model
+    ##########################################################################################
+
+    
+
+    
+    ########## CREATE MODEL ##########
+
     model = get_model(args.model, args.model.castrate)
 
     if args.distributed:
@@ -114,33 +119,69 @@ def main_worker(gpu, ngpus_per_node, args):
         # this code only supports DistributedDataParallel.
         raise NotImplementedError("Only DistributedDataParallel is supported.")
 
+    ##################################################################################################
+
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
 
     optimizer = get_optimizer(
         args.train.optimizer.name, model,
-        lr=args.train.base_lr,
+        lr=args.train.base_lr * args.train.batch_size / 256,
         momentum=args.train.optimizer.momentum,
         weight_decay=args.train.optimizer.weight_decay
     )
 
+    lr_scheduler = LR_Scheduler(
+        optimizer,
+        args.train.warmup_epochs, args.train.warmup_lr * args.train.batch_size / 256,
+        args.train.num_epochs, args.train.base_lr * args.train.batch_size / 256,
+                                  args.train.final_lr * args.train.batch_size / 256,
+        len(train_loader),
+        constant_predictor_lr=True  # see the end of section 4.2 predictor
+    )
+
+    ##################################################################################################
+    logger = Logger(tensorboard=args.logger.tensorboard, matplotlib=args.logger.matplotlib, log_dir=args.ckpt_dir)
+    best_loss = 99999999
+
+    ckpt_folder = args.name + datetime.now().strftime('_%d%m_%H%M%S')
+    if not os.path.exists('./checkpoints/' + ckpt_folder):
+        os.mkdir('./checkpoints/' + ckpt_folder)
+    print('Checkpoint is saved in', './checkpoints/'+ckpt_folder)
+
     # optionally resume from a checkpoint
     if args.resume:
-        if os.path.isfile(args.resume):
-            print("=> loading checkpoint '{}'".format(args.resume))
-            if args.gpu is None:
-                checkpoint = torch.load(args.resume)
-            else:
-                # Map model to be loaded to specified single gpu.
-                loc = 'cuda:{}'.format(args.gpu)
-                checkpoint = torch.load(args.resume, map_location=loc)
-            args.start_epoch = checkpoint['epoch']
-            model.load_state_dict(checkpoint['state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer'])
-            print("=> loaded checkpoint '{}' (epoch {})"
-                  .format(args.resume, checkpoint['epoch']))
+        print("=> loading history at '{}'".format(args.resume))
+
+        if args.gpu is None:
+            checkpoint = torch.load(args.resume.ckpt)
         else:
-            print("=> no checkpoint found at '{}'".format(args.resume))
+            # Map model to be loaded to specified single gpu.
+            loc = args.gpu
+            checkpoint = torch.load(args.resume.ckpt, map_location=loc)
+
+        args.start_epoch = checkpoint['epoch'] + 1
+        model.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+
+        # Because optimizer is created, scheduler must be created too
+        lr_scheduler = LR_Scheduler(
+            optimizer,
+            args.train.warmup_epochs, args.train.warmup_lr * args.train.batch_size / 256,
+            args.train.num_epochs, args.train.base_lr * args.train.batch_size / 256,
+                                    args.train.final_lr * args.train.batch_size / 256,
+            len(train_loader),
+            constant_predictor_lr=True  # see the end of section 4.2 predictor
+        )
+
+        lr_scheduler.iter = start_epoch * len(train_loader)
+        lr_scheduler.current_lr = lr_scheduler.lr_schedule[lr_scheduler.iter]
+
+        bess_loss = logger.load_event(checkpoint['epoch'])
+
+        print("=> loaded checkpoint '{}' (epoch {})".format(args.resume, checkpoint['epoch']))
+
+    ##################################################################################################
 
     cudnn.benchmark = True
 
@@ -164,11 +205,10 @@ def main_worker(gpu, ngpus_per_node, args):
         **args.dataloader_kwargs
     )
 
-    logger = Logger(tensorboard=args.logger.tensorboard, matplotlib=args.logger.matplotlib, log_dir=args.log_dir)
+    ##################################################################################################
 
-    progress = tqdm(args.train.num_epochs, desc=f'Training')
-    best_loss = 99999999
-    for epoch in range(args.train.num_epochs):
+    progress = tqdm(range(args.start_epoch, args.train.num_epochs), desc=f'Training')
+    for epoch in progress:
         if args.distributed:
             train_sampler.set_epoch(epoch)
         adjust_learning_rate(optimizer, epoch, args)
@@ -208,11 +248,14 @@ def train(train_loader, model, criterion, optimizer, epoch, logger, args):
     model.train()
 
     progress = tqdm(train_loader, desc=f'Epoch {epoch}/{args.train.num_epochs}', disable=args.hide_progress)
+    iter_loss = []
     for i, ((queries, keys), _) in enumerate(progress):
 
         if args.gpu is not None:
             queries = queries.cuda(args.gpu, non_blocking=True)
             keys = keys.cuda(args.gpu, non_blocking=True)
+
+        optimizer.zero_grad()
 
         # compute output
         output, target = model(im_q=queries, im_k=keys, distributed=args.distributed)
@@ -223,10 +266,10 @@ def train(train_loader, model, criterion, optimizer, epoch, logger, args):
         acc1, acc5 = accuracy(output, target, topk=(1, 5))
 
         # compute gradient and do SGD step
-        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
+        iter_loss.append(loss.item())
         loss_meter.update(loss.item(), queries.size(0))
         top1_meter.update(acc1.item(), queries.size(0))
         top5_meter.update(acc5.item(), queries.size(0))
@@ -241,7 +284,7 @@ def train(train_loader, model, criterion, optimizer, epoch, logger, args):
         progress.set_postfix(data_dict)
         logger.update_scalers(data_dict)
 
-    return loss_meter.avg, top1_meter.avg, top5_meter.avg
+    return loss_meter.avg, top1_meter.avg, top5_meter.avg, iter_loss
 
 
 def adjust_learning_rate(optimizer, epoch, args):
@@ -260,3 +303,8 @@ if __name__ == '__main__':
     args = get_args()
 
     main(args)
+
+    completed_log_dir = args.log_dir.replace('in-progress', 'debug' if args.debug else 'completed')
+
+    os.rename(args.log_dir, completed_log_dir)
+    print(f'Log file has been saved to {completed_log_dir}')

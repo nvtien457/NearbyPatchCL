@@ -12,6 +12,7 @@ class Plotter(object):
         for key, value in ordered_dict.items():
             if isinstance(value, Tensor):
                 ordered_dict[key] = value.item()
+                
             if self.logger.get(key) is None:
                 self.logger[key] = [value]
             else:

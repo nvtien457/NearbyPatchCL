@@ -1,37 +1,51 @@
 name: MoCov1_CIFAR10_100
+
 train:
-  base_lr: 0.025
-  batch_size: 128
+  batch_size: 256
+
   num_epochs: 50
+  warmup_epochs: 5
   stop_at_epoch: 50
+
+  base_lr: 0.05
+  warmup_lr: 0.0001
+  final_lr: 0.00001
   optimizer:
     name: sgd
     momentum: 0.9
     weight_decay: 0.0001
     cos: True
     scheduler: [120, 160]
+
   knn_monitor: True
   knn_interval: 5
   knn_k: 200
   save_interval: 5
+
 model:
   name: moco
-  backbone: resnet50
+  backbone: resnet18
   castrate: True
   dim: 128
   K: 65536
   m: 0.999
   T: 0.07
   mlp: False
+
 dataset:
   name: cifar10
   image_size: 32
   num_workers: 1
+
 aug:
   name: moco
   version: v1
+
 seed: None
-ckpt: None
 logger:
   tensorboard: True
   matplotlib: True
+
+resume:
+  ckpt: None
+  event: None
