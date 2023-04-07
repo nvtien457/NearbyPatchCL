@@ -1,0 +1,62 @@
+name: BYOL_CIFAR10_100
+
+model:
+  name: byol
+  backbone: resnet18
+  param:
+    in_dim: 2048
+    hidden_dim: 4096
+    out_dim: 256
+    m: 0.996
+
+dataset:
+  name: cifar10
+  image_size: 32
+  num_workers: 1
+
+aug:
+  name: byol
+  param:
+    size: 224
+
+train:
+  batch_size: 128
+  iters_to_accumulate: 32 
+  train_dir: ./data
+  num_epochs: 15
+  nodes: 1
+
+  criterion:
+    name: neg-cosine
+    param:
+      version: simplified
+  metrics: ['acc@1', 'acc@5']
+
+  optimizer:
+    name: lars
+    param:
+      lr: 0.4
+      momentum: 0.9
+      weight_decay: 0.0000015
+      eta: 0.001
+      
+  scheduler:
+    name: lr_scheduler
+    param:
+      warmup_epochs: 10
+      warmup_lr: 0.0001
+      final_lr: 0.00001
+
+  knn_monitor: True
+  knn_interval: 5
+  knn_k: 200
+  save_interval: 5
+
+seed: None
+tensorboard: True
+matplotlib: True
+
+resume:
+  status: False
+  ckpt: None
+  event: None

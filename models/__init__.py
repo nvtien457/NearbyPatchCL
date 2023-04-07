@@ -1,11 +1,14 @@
-from torchvision.models import resnet50, resnet18
 import torchvision.models as models
 import torch
 
 from .moco import MoCo
+from .simclr import SimCLR
+from .simsiam import SimSiam
+from .simtriplet import SimTriplet
+from .byol import BYOL
 
 def get_backbone(backbone, castrate=True):           #lq debug
-    backbone = eval(f"{backbone}()")
+    backbone = models.__dict__[backbone]()
 
     if castrate:
         backbone.output_dim = backbone.fc.in_features
@@ -13,10 +16,23 @@ def get_backbone(backbone, castrate=True):           #lq debug
 
     return backbone
 
-def get_model(model_cfg, castrate=False):
+def get_model(model_cfg):
     if model_cfg.name == 'moco':
-        model = MoCo(base_encoder=models.__dict__[model_cfg.backbone], 
-                    dim=model_cfg.dim, K=model_cfg.K, m=model_cfg.m, T=model_cfg.T, mlp=model_cfg.mlp)
+        model = MoCo(base_encoder=models.__dict__[model_cfg.backbone], **model_cfg.params)
+    
+    elif model_cfg.name == 'simclr':
+        model = SimCLR(encoder=get_backbone(model_cfg.backbone), **model_cfg.params)
+
+    elif model_cfg.name == 'simsiam':
+        model = SimSiam(base_encoder=models.__dict__[model_cfg.backbone], **model_cfg.params)
+
+    elif model_cfg.name == 'simtriplet':
+        model = SimTriplet(get_backbone(backbone=model_cfg.backbone))
+        if  model_cfg.params.proj_layers is not None:
+            model.projector.set_layers(model_cfg.params.proj_layers)
+
+    elif model_cfg.name == 'byol':
+        model = BYOL(get_backbone(backbone=model_cfg.backbone), **model_cfg.params)
 
     elif model_cfg.name == 'swav':
         raise NotImplementedError

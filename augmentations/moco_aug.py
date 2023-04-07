@@ -54,7 +54,7 @@ class MoCoTransform:
                     T.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
                 ], p=0.8),
                 T.RandomGrayscale(p=0.2),
-                T.RandomApply([moco.loader.GaussianBlur([.1, 2.])], p=0.5),
+                T.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
                 T.RandomHorizontalFlip(),
                 T.ToTensor(),
                 normalize

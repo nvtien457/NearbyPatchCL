@@ -1,0 +1,59 @@
+name: SimTriplet_CIFAR10_100
+
+model:
+  name: simtriplet
+  backbone: resnet18
+  param:
+    proj_layers: 3
+
+dataset:
+  name: cifar10
+  image_size: 32
+  num_workers: 1
+
+aug:
+  name: moco
+  param:
+    version: v2
+
+train:
+  batch_size: 128
+  iters_to_accumulate: 1
+  train_dir: ./data
+  num_epochs: 15
+
+  criterion:
+    name: cosine
+    param:
+      dim: 1
+  metrics: ['acc@1', 'acc@5']
+
+  optimizer:
+    name: sgd
+    param:
+      lr: 0.05
+      momentum: 0
+      weight_decay: 0.0001
+      
+  scheduler:
+    name: lr_scheduler
+    param:
+      warmup_epochs: 30
+      warmup_lr: 0.01
+      final_lr: 0.00005
+
+  knn_monitor: True
+  knn_interval: 5
+  knn_k: 200
+  save_interval: 5
+
+eval: None
+
+seed: None
+tensorboard: True
+matplotlib: True
+
+resume:
+  status: False
+  ckpt: None
+  event: None
