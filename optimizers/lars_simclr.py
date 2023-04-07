@@ -21,17 +21,17 @@ import torch.nn as nn
 # In general we closely followed SimCLR implementation of LARS.
 class LARS_simclr(Optimizer):
     def __init__(self, 
-                 named_modules, 
-                 lr,
-                 momentum=0.9, # beta? YES
-                 trust_coef=1e-3,
-                 weight_decay=1.5e-6,
+                named_modules, 
+                lr=0.1,
+                momentum=0.9, # beta? YES
+                trust_coef=1e-3,
+                weight_decay=1.5e-6,
                 exclude_bias_from_adaption=True):
         '''byol: As in SimCLR and official implementation of LARS, we exclude bias # and batchnorm weight from the Lars adaptation and weightdecay'''
         defaults = dict(momentum=momentum,
                 lr=lr,
                 weight_decay=weight_decay,
-                 trust_coef=trust_coef)
+                trust_coef=trust_coef)
         parameters = self.exclude_from_model(named_modules, exclude_bias_from_adaption)
         super(LARS_simclr, self).__init__(parameters, defaults)
 

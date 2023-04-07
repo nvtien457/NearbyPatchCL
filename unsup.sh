@@ -1,3 +1,3 @@
-python moco_train.py \
-    -c ./configs/MoCo_unsup.yaml \
+python main.py \
+    -c ./configs/BYOL_unsup.yaml \
     --download

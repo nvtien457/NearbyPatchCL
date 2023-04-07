@@ -24,7 +24,7 @@ from models import get_model
 from augmentations import get_aug
 from datasets import get_dataset
 from optimizers import get_optimizer, LR_Scheduler, adjust_learning_rate
-from tools import accuracy, get_args, Logger, AverageMeter
+from tools import accuracy, get_args, Logger, AverageMeter, NT_Xent
 
 def main(args):
 
@@ -140,23 +140,27 @@ def main_worker(gpu, ngpus_per_node, args):
     ##################################################################################################
 
     # define loss function (criterion) and optimizer
-    criterion = nn.CrossEntropyLoss().cuda(args.gpu)
+    criterion = NT_Xent(batch_size=args.train.batch_size, temperature=args.train.temperature, world_size=torch.cuda.device_count() * args.train.nodes)
 
     optimizer = get_optimizer(
         args.train.optimizer.name, model,
-        lr=args.train.base_lr * args.train.batch_size / 256,
+        # lr=args.train.base_lr * args.train.batch_size / 256,
+        lr = 0.3 * args.train.batch_size / 256,
         momentum=args.train.optimizer.momentum,
         weight_decay=args.train.optimizer.weight_decay
     )
 
-    lr_scheduler = LR_Scheduler(
-        optimizer,
-        args.train.warmup_epochs, args.train.warmup_lr * args.train.batch_size / 256,
-        args.train.num_epochs, args.train.base_lr * args.train.batch_size / 256,
-                                  args.train.final_lr * args.train.batch_size / 256,
-        len(train_loader),
-        constant_predictor_lr=True  # see the end of section 4.2 predictor
-    )
+    # lr_scheduler = LR_Scheduler(
+    #     optimizer,
+    #     args.train.warmup_epochs, args.train.warmup_lr * args.train.batch_size / 256,
+    #     args.train.num_epochs, args.train.base_lr * args.train.batch_size / 256,
+    #                               args.train.final_lr * args.train.batch_size / 256,
+    #     len(train_loader),
+    #     constant_predictor_lr=True  # see the end of section 4.2 predictor
+    # )
+    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, args.train.num_epochs, eta_min=0, last_epoch=-1
+        )
 
     ##################################################################################################
 
@@ -196,13 +200,16 @@ def main_worker(gpu, ngpus_per_node, args):
         optimizer.load_state_dict(checkpoint['optimizer'])
 
         # Because optimizer is created, scheduler must be created too
-        lr_scheduler = LR_Scheduler(
-            optimizer,
-            args.train.warmup_epochs, args.train.warmup_lr * args.train.batch_size / 256,
-            args.train.num_epochs, args.train.base_lr * args.train.batch_size / 256,
-                                    args.train.final_lr * args.train.batch_size / 256,
-            len(train_loader),
-            constant_predictor_lr=True  # see the end of section 4.2 predictor
+        # lr_scheduler = LR_Scheduler(
+        #     optimizer,
+        #     args.train.warmup_epochs, args.train.warmup_lr * args.train.batch_size / 256,
+        #     args.train.num_epochs, args.train.base_lr * args.train.batch_size / 256,
+        #                             args.train.final_lr * args.train.batch_size / 256,
+        #     len(train_loader),
+        #     constant_predictor_lr=True  # see the end of section 4.2 predictor
+        # )
+        lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, args.num_epochs, eta_min=0, last_epoch=-1
         )
 
         lr_scheduler.iter = args.start_epoch * len(train_loader)
@@ -222,9 +229,9 @@ def main_worker(gpu, ngpus_per_node, args):
     for epoch in progress:
         if args.distributed:
             train_sampler.set_epoch(epoch)
-        adjust_learning_rate(optimizer, epoch, args)
 
         # train for one epoch
+        lr = optimizer.param_groups[0]["lr"]
         loss, acc1, acc5 = train(train_loader, model, criterion, optimizer, lr_scheduler, epoch, logger, args)
 
         progress.set_postfix({'loss': ':.4f'.format(loss), 'acc@1': ':6.2f'.format(acc1), 'acc@5': ':6.2f'.format(acc5)})
@@ -236,7 +243,7 @@ def main_worker(gpu, ngpus_per_node, args):
             'state_dict': model.state_dict(),
             'optimizer' : optimizer.state_dict(),
         }
-    
+
         if loss < best_loss:
             best_loss = loss
             filename.replace('ckpt_', 'ckpt_best_')
@@ -259,21 +266,23 @@ def train(train_loader, model, criterion, optimizer, lr_scheduler, epoch, logger
 
     progress = tqdm(train_loader, desc=f'Epoch {epoch}/{args.train.num_epochs}')
     # iter_loss = []
-    for i, ((queries, keys), _) in enumerate(progress):
+    for i, ((x_i, x_j), _) in enumerate(progress):
+        batch_size = x_i.shape[0]
 
         if args.gpu is not None:
-            queries = queries.cuda(args.gpu, non_blocking=True)
-            keys = keys.cuda(args.gpu, non_blocking=True)
+            x_i = x_j.cuda(args.gpu, non_blocking=True)
+            x_j = x_j.cuda(args.gpu, non_blocking=True)
 
         optimizer.zero_grad()
 
         # compute output
-        output, target = model(im_q=queries, im_k=keys, distributed=args.distributed)
-        loss = criterion(output, target)
+        h_i, z_i = model(x_i)
+        h_j, z_j = model(x_j)
+        loss = criterion(z_i, z_j)
 
         # acc1/acc5 are (K+1)-way contrast classifier accuracy
         # measure accuracy and record loss
-        acc1, acc5 = accuracy(output, target, topk=(1, 5))
+        acc1, acc5 = accuracy(torch.mm(z_i, z_j.T), torch.arange(0, batch_size, dtype=torch.long).cuda(), topk=(1, 5))
 
         # compute gradient and do SGD step
         loss.backward()
@@ -281,9 +290,9 @@ def train(train_loader, model, criterion, optimizer, lr_scheduler, epoch, logger
         # lr_scheduler.step()
 
         # iter_loss.append(loss.item())
-        loss_meter.update(loss.item(), queries.size(0))
-        top1_meter.update(acc1.item(), queries.size(0))
-        top5_meter.update(acc5.item(), queries.size(0))
+        loss_meter.update(loss.item(), batch_size)
+        top1_meter.update(acc1.item(), batch_size)
+        top5_meter.update(acc5.item(), batch_size)
 
         data_dict = {
             'lr': optimizer.param_groups[0]['lr'],

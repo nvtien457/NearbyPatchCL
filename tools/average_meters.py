@@ -1,3 +1,5 @@
+import torch
+
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self, name, fmt=':f'):
@@ -12,6 +14,9 @@ class AverageMeter(object):
         self.count = 0
 
     def update(self, val, n=1):
+        if isinstance(val, torch.Tensor):
+            val = val.item()
+
         self.val = val
         self.sum += val * n
         self.count += n

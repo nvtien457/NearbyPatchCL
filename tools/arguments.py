@@ -22,7 +22,10 @@ class Namespace(object):
             if isinstance(value, dict):
                 self.__dict__[key] = Namespace(value)
             else:
-                self.__dict__[key] = value
+                if value == 'None':
+                    self.__dict__[key] = None
+                else:
+                    self.__dict__[key] = value
     
     def __getattr__(self, attribute):
 
@@ -53,6 +56,7 @@ def get_args():
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--eval_from', type=str, default=None)
     parser.add_argument('--hide_progress', action='store_true')
+    parser.add_argument('--mixed_precision', '-mp', action='store_true', help='Mixed precision traing')
 
     parser.add_argument('--dist-url', default='127.0.0.1', type=str,
                             help='url used to set up distributed training')
@@ -70,13 +74,9 @@ def get_args():
 
     args = parser.parse_args()
 
-
     with open(args.config_file, 'r') as f:
         for key, value in Namespace(yaml.load(f, Loader=yaml.FullLoader)).__dict__.items():
-            if value == 'None':
-                vars(args)[key] = None
-            else:
-                vars(args)[key] = value
+            vars(args)[key] = value
 
     vars(args)['start_epoch'] = 0
 
@@ -115,13 +115,54 @@ def get_args():
 
     set_deterministic(args.seed)
 
+    # model.params
+    model_param = dict()
+    for k, v in args.model.param.__dict__.items():
+        model_param[k] = v
+    vars(args.model)['params'] = model_param
 
-    vars(args)['aug_kwargs'] = {
-        # 'name':args.model.name,
-        'name': args.aug.name,
-        'version': args.aug.version,
-        'image_size': args.dataset.image_size
-    }
+
+    # criterion.params
+    if args.train.criterion.param == None:
+        vars(args.train.criterion)['params'] = dict()
+    else:
+        criterion_param = dict()
+        for k, v in args.train.criterion.param.__dict__.items():
+            criterion_param[k] = v
+        vars(args.train.criterion)['params'] = criterion_param
+
+
+    # optimizer.params
+    if args.train.optimizer.param == None:
+        vars(args.train.optimizer)['params'] = dict()
+    else:
+        optimizer_param = dict()
+        for k, v in args.train.optimizer.param.__dict__.items():
+            optimizer_param[k] = v
+        vars(args.train.optimizer)['params'] = optimizer_param
+
+
+    # scheduler.params
+    if args.train.scheduler.param == None:
+        vars(args.train.scheduler)['params'] = dict()
+    else:
+        scheduler_param = dict()
+        for k, v in args.train.scheduler.param.__dict__.items():
+            scheduler_param[k] = v
+        scheduler_param['base_lr'] = optimizer_param['lr']
+        scheduler_param['num_epochs'] = args.train.num_epochs
+        vars(args.train.scheduler)['params'] = scheduler_param
+
+
+    # aug.params
+    if args.aug.param == None:
+        vars(args.aug)['params'] = dict()
+    else:
+        aug_param = dict()
+        for k, v in args.aug.param.__dict__.items():
+            aug_param[k] = v
+        vars(args.aug)['params'] = aug_param
+
     vars(args)['dataset_kwargs'] = {
         'download':args.download,
         'debug_subset_size': args.debug_subset_size if args.debug else None,

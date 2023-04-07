@@ -1,14 +1,16 @@
-name: MoCov1_CIFAR10_100
+name: SimSiam_CIFAR10_100
 
 train:
   batch_size: 512
-  iters_to_accumulate: 4
+  iters_to_accumulate: 1
   train_dir: ./data
   num_epochs: 15
+  nodes: 1
 
   criterion:
-    name: CE
-    param: None
+    name: neg-cosine
+    param:
+      version: simplified
   metrics: ['acc@1', 'acc@5']
 
   optimizer:
@@ -17,6 +19,7 @@ train:
       lr: 0.05
       momentum: 0.9
       weight_decay: 0.0001
+      
   scheduler:
     name: lr_scheduler
     param:
@@ -30,14 +33,11 @@ train:
   save_interval: 5
 
 model:
-  name: moco
+  name: simsiam
   backbone: resnet18
   param:
-    dim: 128
-    K: 65536
-    m: 0.999
-    T: 0.07
-    mlp: False
+    dim: 2048
+    pred_dim: 512
 
 dataset:
   name: cifar10
@@ -46,12 +46,14 @@ dataset:
 
 aug:
   name: moco
-  version: v1
+  param:
+    version: v2
 
 seed: None
 tensorboard: True
 matplotlib: True
 
 resume:
+  status: False
   ckpt: None
   event: None

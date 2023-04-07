@@ -1,14 +1,16 @@
-name: MoCov1_CIFAR10_100
+name: SimCLR_CIFAR10_100
 
 train:
   batch_size: 512
   iters_to_accumulate: 4
   train_dir: ./data
   num_epochs: 15
+  nodes: 1
 
   criterion:
-    name: CE
-    param: None
+    name: NT-Xent
+    param:
+      temperature: 0.07
   metrics: ['acc@1', 'acc@5']
 
   optimizer:
@@ -16,7 +18,7 @@ train:
     param:
       lr: 0.05
       momentum: 0.9
-      weight_decay: 0.0001
+      weight_decay: 0.000001
   scheduler:
     name: lr_scheduler
     param:
@@ -30,14 +32,11 @@ train:
   save_interval: 5
 
 model:
-  name: moco
+  name: simclr
   backbone: resnet18
+  castrate: True
   param:
     dim: 128
-    K: 65536
-    m: 0.999
-    T: 0.07
-    mlp: False
 
 dataset:
   name: cifar10
@@ -45,13 +44,13 @@ dataset:
   num_workers: 1
 
 aug:
-  name: moco
-  version: v1
+  name: simclr
 
 seed: None
 tensorboard: True
 matplotlib: True
 
 resume:
+  status: False
   ckpt: None
   event: None
