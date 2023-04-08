@@ -116,61 +116,71 @@ def get_args():
     set_deterministic(args.seed)
 
     # model.params
-    model_param = dict()
-    for k, v in args.model.param.__dict__.items():
-        model_param[k] = v
-    vars(args.model)['params'] = model_param
+    if args.model.params == None:
+        vars(args.model)['params'] = dict()
+    model_params = dict()
+    for k, v in args.model.params.__dict__.items():
+        model_params[k] = v
+    vars(args.model)['params'] = model_params
 
 
     # criterion.params
-    if args.train.criterion.param == None:
+    if args.train.criterion.params == None:
         vars(args.train.criterion)['params'] = dict()
     else:
-        criterion_param = dict()
-        for k, v in args.train.criterion.param.__dict__.items():
-            criterion_param[k] = v
-        vars(args.train.criterion)['params'] = criterion_param
+        criterion_params = dict()
+        for k, v in args.train.criterion.params.__dict__.items():
+            criterion_params[k] = v
+        vars(args.train.criterion)['params'] = criterion_params
 
 
     # optimizer.params
-    if args.train.optimizer.param == None:
+    if args.train.optimizer.params == None:
         vars(args.train.optimizer)['params'] = dict()
     else:
-        optimizer_param = dict()
-        for k, v in args.train.optimizer.param.__dict__.items():
-            optimizer_param[k] = v
-        vars(args.train.optimizer)['params'] = optimizer_param
+        optimizer_params = dict()
+        for k, v in args.train.optimizer.params.__dict__.items():
+            optimizer_params[k] = v
+        vars(args.train.optimizer)['params'] = optimizer_params
 
 
     # scheduler.params
-    if args.train.scheduler.param == None:
+    if args.train.scheduler.params == None:
         vars(args.train.scheduler)['params'] = dict()
     else:
-        scheduler_param = dict()
-        for k, v in args.train.scheduler.param.__dict__.items():
-            scheduler_param[k] = v
-        scheduler_param['base_lr'] = optimizer_param['lr']
-        scheduler_param['num_epochs'] = args.train.num_epochs
-        vars(args.train.scheduler)['params'] = scheduler_param
+        scheduler_params = dict()
+        for k, v in args.train.scheduler.params.__dict__.items():
+            scheduler_params[k] = v
+        scheduler_params['base_lr'] = optimizer_params['lr']
+        scheduler_params['num_epochs'] = args.train.num_epochs
+        vars(args.train.scheduler)['params'] = scheduler_params
 
+    # datset.params
+    if args.dataset.params == None:
+        vars(args.dataset)['params'] = dict()
+    else:
+        dataset_params = dict()
+        for k, v in args.dataset.params.__dict__.items():
+            dataset_params[k] = v
+        vars(args.dataset)['params'] = dataset_params
 
     # aug.params
-    if args.aug.param == None:
+    if args.aug.params == None:
         vars(args.aug)['params'] = dict()
     else:
-        aug_param = dict()
-        for k, v in args.aug.param.__dict__.items():
-            aug_param[k] = v
-        vars(args.aug)['params'] = aug_param
+        aug_params = dict()
+        for k, v in args.aug.params.__dict__.items():
+            aug_params[k] = v
+        vars(args.aug)['params'] = aug_params
 
     vars(args)['dataset_kwargs'] = {
-        'download':args.download,
         'debug_subset_size': args.debug_subset_size if args.debug else None,
     }
+
     vars(args)['dataloader_kwargs'] = {
         'drop_last': True,
         'pin_memory': True,
-        'num_workers': args.dataset.num_workers,
+        'num_workers': args.num_workers,
     }
 
     return args

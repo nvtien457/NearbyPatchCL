@@ -1,27 +1,45 @@
-name: SimCLR_CIFAR10_100
+name: SimCLR_CATCH_100
+
+model:
+  name: simclr
+  backbone: resnet18
+  castrate: True
+  params:
+    dim: 128
+
+dataset:
+  name: CATCH
+  params:
+    center_list: ['../CATCH/TRAIN_SET']
+    cancer: Melanoma
+    patch_id: None
+
+aug:
+  name: simclr
+  params:
+    image_size: 224
 
 train:
-  batch_size: 512
+  batch_size: 256
   iters_to_accumulate: 4
-  train_dir: ./data
   num_epochs: 15
-  nodes: 1
 
   criterion:
     name: NT-Xent
-    param:
+    params:
       temperature: 0.07
   metrics: ['acc@1', 'acc@5']
 
   optimizer:
     name: sgd
-    param:
+    params:
       lr: 0.05
       momentum: 0.9
       weight_decay: 0.000001
+      
   scheduler:
     name: lr_scheduler
-    param:
+    params:
       warmup_epochs: 10
       warmup_lr: 0.0001
       final_lr: 0.00001
@@ -31,22 +49,8 @@ train:
   knn_k: 200
   save_interval: 5
 
-model:
-  name: simclr
-  backbone: resnet18
-  castrate: True
-  param:
-    dim: 128
-
-dataset:
-  name: cifar10
-  image_size: 32
-  num_workers: 1
-
-aug:
-  name: simclr
-
 seed: None
+num_workers: 1
 tensorboard: True
 matplotlib: True
 

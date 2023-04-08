@@ -1,17 +1,25 @@
 import torch
 import torchvision
 
-def get_dataset(dataset, data_dir, transform, train=True, download=True, debug_subset_size=None):
+from .catch_dataset import CATCHDataset
+
+def get_dataset(dataset_cfg, transform=None, debug_subset_size=None):
+    dataset = dataset_cfg.name
+
     if dataset == 'mnist':
-        dataset = torchvision.datasets.MNIST(data_dir, train=train, transform=transform, download=download)
+        dataset = torchvision.datasets.MNIST(transform=transform, **dataset_cfg.params)
     elif dataset == 'stl10':
-        dataset = torchvision.datasets.STL10(data_dir, split='train+unlabeled' if train else 'test', transform=transform, download=download)
+        dataset = torchvision.datasets.STL10(transform=transform, **dataset_cfg.params)
     elif dataset == 'cifar10':
-        dataset = torchvision.datasets.CIFAR10(data_dir, train=train, transform=transform, download=download)
+        dataset = torchvision.datasets.CIFAR10(transform=transform, **dataset_cfg.params)
     elif dataset == 'cifar100':
-        dataset = torchvision.datasets.CIFAR100(data_dir, train=train, transform=transform, download=download)
+        dataset = torchvision.datasets.CIFAR100(transform=transform, **dataset_cfg.params)
     elif dataset == 'imagenet':
-        dataset = torchvision.datasets.ImageNet(data_dir, split='train' if train == True else 'val', transform=transform, download=download)
+        dataset = torchvision.datasets.ImageNet(transform=transform, **dataset_cfg.params)
+    
+    elif dataset == 'CATCH':
+        dataset = CATCHDataset(transform=transform, **dataset_cfg.params)
+
     else:
         raise NotImplementedError
 

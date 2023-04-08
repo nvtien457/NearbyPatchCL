@@ -10,7 +10,7 @@ from .lr_scheduler import LR_Scheduler
 
 def get_optimizer(optimizer_cfg, model):
     name = optimizer_cfg.name
-    lr = optimizer_cfg.param.lr
+    lr = optimizer_cfg.params['lr']
 
     predictor_prefix = ('module.predictor', 'predictor')
     parameters = [{
