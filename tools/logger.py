@@ -57,8 +57,8 @@ class Logger(object):
                 else:
                   self.data_dict[v.tag].append(v.simple_value)
 
-        if epoch:   epoch = epoch
-        else:       epoch = self.data_dict['epoch'][-1]
+        if epoch != None:   epoch = epoch
+        else:               epoch = self.data_dict['epoch'][-1]
 
         num_epochs = len(self.data_dict['epoch'])
         if epoch < 0 or epoch > self.data_dict['epoch'][-1]:

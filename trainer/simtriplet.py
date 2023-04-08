@@ -1,9 +1,12 @@
+import torch
+
 from tools import accuracy
 
-def simsiam_train(inputs, labels, model, criterion, args):
+def simtriplet_train(inputs, labels, model, criterion, args):
     img_1 = inputs[0]
     img_2 = inputs[1]
     img_3 = inputs[2]
+    batch_size = labels.shape[0]
 
     img_1 = img_1.to(args.device)
     img_2 = img_2.to(args.device)
@@ -18,6 +21,9 @@ def simsiam_train(inputs, labels, model, criterion, args):
     result_dict = {
         'loss': loss
     }
+
+    output = torch.mm(p1, p2.T)
+    target = torch.arange(0, batch_size, dtype=torch.long).to(args.device)
 
     for m in args.train.metrics:
         if m == 'acc@1':

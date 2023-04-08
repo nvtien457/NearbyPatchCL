@@ -30,6 +30,6 @@ class SimCLR(nn.Module):
             p: projection of feature
         """
         z = self.encoder(x)
-        p = self.projector(h)
+        p = self.projector(z)
 
         return z, p

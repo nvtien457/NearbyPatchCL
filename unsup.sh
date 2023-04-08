@@ -1,3 +1,4 @@
-python main.py \
+!python main.py \
     -c ./configs/SimCLR_unsup.yaml \
-    --download
+    --ckpt_dir ../NVT_checkpoints \
+    --log_dir ../NVT_logs
