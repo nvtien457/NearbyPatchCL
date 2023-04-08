@@ -20,8 +20,8 @@ aug:
     image_size: 224
 
 train:
-  batch_size: 512
-  iters_to_accumulate: 4
+  batch_size: 128
+  iters_to_accumulate: 8
   num_epochs: 15
   save_interval: 5
 

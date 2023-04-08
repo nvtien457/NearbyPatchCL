@@ -45,9 +45,6 @@ def main(args):
     optimizer = get_optimizer(optimizer_cfg=args.train.optimizer, model=model)
     scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
 
-    start_epoch = 0
-    best_loss = 99999999
-
     # create log & ckpt
     args.log_dir = os.path.join(args.log_dir, 'in-progress_' + datetime.now().strftime('%m%d%H%M%S_') + args.name)
     args.ckpt_dir = os.path.join(args.ckpt_dir, datetime.now().strftime('%m%d%H%M%S_') + args.name)
@@ -57,9 +54,31 @@ def main(args):
     print(f'creating folder {args.ckpt_dir}')
     shutil.copy2(args.config_file, args.log_dir)
 
-    # Start training
-    global_progress = tqdm(range(args.train.num_epochs), initial=start_epoch, desc='Training')
+    start_epoch = 0
+    best_loss = 99999999
     logger = Logger(log_dir=args.log_dir, tensorboard=args.tensorboard, matplotlib=args.matplotlib)
+
+    if args.resume.status:
+        print("=> loading history at '{}'".format(args.resume.ckpt))
+
+        checkpoint = torch.load(args.resume.ckpt)
+
+        start_epoch = checkpoint['epoch'] + 1
+        model.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+
+        # Because optimizer is created, scheduler must be created too
+        lr_scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
+
+        lr_scheduler.iter = args.start_epoch * len(train_loader)
+        lr_scheduler.current_lr = lr_scheduler.lr_schedule[lr_scheduler.iter]
+
+        bess_loss = logger.load_event(args.resume.event, checkpoint['epoch'])
+
+        print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume, checkpoint['epoch'], lr_scheduler.iter, best_loss))
+
+    # Start training
+    global_progress = tqdm(range(start_epoch, args.train.num_epochs), initial=start_epoch, total=args.train.num_epochs, desc='Training')
 
     model = model.to(args.device)
     trainer = Trainer(train_loader=train_loader, model=model, scaler=scaler,
@@ -74,19 +93,20 @@ def main(args):
 
         # Display
         global_progress.set_postfix(metrics)
+        logger.update_scalers({'epoch': epoch})
 
         # Save the checkpoint
         filepath = os.path.join(args.ckpt_dir, 'ckpt_{:03d}.pth'.format(epoch))
         checkpoint = {
             'backbone': args.model.backbone,
             'state_dict': model.state_dict(),
-            'optimizers': optimizer.state_dict(),
+            'optimizer': optimizer.state_dict(),
             'epoch': epoch,
         }
 
         if loss < best_loss:
             best_loss = loss
-            filename.replace('ckpt_', 'ckpt_best_')
+            filepath.replace('ckpt_', 'ckpt_best_')
             torch.save(checkpoint, filepath)
 
         elif (epoch + 1) % args.train.save_interval == 0:

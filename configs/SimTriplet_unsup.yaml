@@ -1,55 +1,52 @@
-name: SimTriplet_CIFAR10_100
+name: SimTriplet_CATCH_100
 
 model:
   name: simtriplet
-  backbone: resnet18
-  param:
+  backbone: resnet50
+  params:
     proj_layers: 3
 
 dataset:
-  name: cifar10
-  image_size: 32
-  num_workers: 1
+  name: CATCH
+  params:
+    center_list: ['../TRAIN_SET']
+    cancer: Melanoma
+    patch_id: None
 
 aug:
   name: moco
-  param:
+  params:
     version: v2
+    image_size: 128
 
 train:
   batch_size: 128
-  iters_to_accumulate: 1
-  train_dir: ./data
-  num_epochs: 15
+  iters_to_accumulate: 4
+  num_epochs: 100
+  save_interval: 5
 
   criterion:
-    name: cosine
-    param:
-      dim: 1
+    name: neg-cosine
+    params: None
   metrics: ['acc@1', 'acc@5']
 
   optimizer:
     name: sgd
-    param:
+    params:
       lr: 0.05
       momentum: 0
       weight_decay: 0.0001
       
   scheduler:
     name: lr_scheduler
-    param:
+    params:
       warmup_epochs: 30
       warmup_lr: 0.01
       final_lr: 0.00005
 
-  knn_monitor: True
-  knn_interval: 5
-  knn_k: 200
-  save_interval: 5
-
-eval: None
 
 seed: None
+num_workers: 1
 tensorboard: True
 matplotlib: True
 

@@ -6,6 +6,7 @@ from .simclr import simclr_train
 from .moco import moco_train
 from .simsiam import simsiam_train
 from .byol import byol_train
+from .simtriplet import simtriplet_train
 
 import sys
 sys.path.append('../')
@@ -37,6 +38,9 @@ class Trainer:
 
         elif args.model.name == 'simsiam':
             self.train_func = simsiam_train
+
+        elif args.model.name == 'simtriplet':
+            self.train_func = simtriplet_train
 
         elif args.model.name == 'byol':
             self.train_func = byol_train
