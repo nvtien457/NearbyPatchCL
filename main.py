@@ -1,4 +1,7 @@
 from tqdm import tqdm
+import os
+from datetime import datetime
+import shutil
 
 import torch
 import torch.nn as nn
@@ -42,8 +45,20 @@ def main(args):
     optimizer = get_optimizer(optimizer_cfg=args.train.optimizer, model=model)
     scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
 
+    start_epoch = 0
     best_loss = 99999999
-    global_progress = tqdm(range(args.train.num_epochs), desc='Training')
+
+    # create log & ckpt
+    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + datetime.now().strftime('%m%d%H%M%S_') + args.name)
+    args.ckpt_dir = os.path.join(args.ckpt_dir, datetime.now().strftime('%m%d%H%M%S_') + args.name)
+    os.makedirs(args.log_dir, exist_ok=False)
+    print(f'creating folder {args.log_dir}')
+    os.makedirs(args.ckpt_dir, exist_ok=True)
+    print(f'creating folder {args.ckpt_dir}')
+    shutil.copy2(args.config_file, args.log_dir)
+
+    # Start training
+    global_progress = tqdm(range(args.train.num_epochs), initial=start_epoch, desc='Training')
     logger = Logger(log_dir=args.log_dir, tensorboard=args.tensorboard, matplotlib=args.matplotlib)
 
     model = model.to(args.device)
@@ -61,7 +76,7 @@ def main(args):
         global_progress.set_postfix(metrics)
 
         # Save the checkpoint
-        filename = 'ckpt_{:03d}.pth'.format(epoch)
+        filepath = os.path.join(args.ckpt_dir, 'ckpt_{:03d}.pth'.format(epoch))
         checkpoint = {
             'backbone': args.model.backbone,
             'state_dict': model.state_dict(),
@@ -72,15 +87,19 @@ def main(args):
         if loss < best_loss:
             best_loss = loss
             filename.replace('ckpt_', 'ckpt_best_')
-            # torch.save(checkpoint, filename)
-            print('best')
+            torch.save(checkpoint, filepath)
 
         elif (epoch + 1) % args.train.save_interval == 0:
-            # torch.save(checkpoint, filename)
-            print('save')
+            torch.save(checkpoint, filepath)
 
 
 if __name__=='__main__':
     args = get_args()
+    print('Device:', args.device)
 
     main(args)
+
+    completed_log_dir = args.log_dir.replace('in-progress', 'debug' if args.debug else 'completed')
+
+    os.rename(args.log_dir, completed_log_dir)
+    print(f'Log file has been saved to {completed_log_dir}')

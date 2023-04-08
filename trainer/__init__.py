@@ -59,7 +59,8 @@ class Trainer:
 
                 self.scaler.scale(loss).backward()
 
-                if (batch_idx + 1) % self.args.train.iters_to_accumulate == 0:
+                if ((batch_idx + 1) % self.args.train.iters_to_accumulate == 0) or \
+                        (batch_idx + 1 == len(self.train_loader)):
                     self.scaler.step(self.optimizer)
                     self.scaler.update()
 
