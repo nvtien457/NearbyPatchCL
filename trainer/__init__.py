@@ -57,16 +57,16 @@ class Trainer:
                 data_dict = self.train_func(inputs, targets, self.model, self.criterion, self.args)
                 loss = data_dict['loss']
 
-            self.scaler.scale(loss).backward()
+                self.scaler.scale(loss).backward()
 
-            if (batch_idx + 1) % self.args.train.iters_to_accumulate == 0:
-                self.scaler.step(self.optimizer)
-                self.scaler.update()
+                if (batch_idx + 1) % self.args.train.iters_to_accumulate == 0:
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
 
-                if self.scheduler is not None:
-                    self.scheduler.step()
+                    if self.scheduler is not None:
+                        self.scheduler.step()
 
-                self.optimizer.zero_grad()
+                    self.optimizer.zero_grad()
 
             # update metric meters
             for key, value in data_dict.items():

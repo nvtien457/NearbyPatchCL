@@ -1,3 +1,3 @@
 python main.py \
-    -c ./configs/BYOL_unsup.yaml \
+    -c ./configs/SimCLR_unsup.yaml \
     --download

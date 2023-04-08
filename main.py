@@ -15,8 +15,7 @@ from trainer import Trainer
 def main(args):
     train_loader = data.DataLoader(
         dataset=get_dataset(
-            dataset=args.dataset.name, 
-            data_dir=args.train.train_dir, 
+            dataset_cfg=args.dataset,
             transform=get_aug(args.aug),
             **args.dataset_kwargs
         ),
