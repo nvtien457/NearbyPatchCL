@@ -46,7 +46,7 @@ def main(args):
     scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
 
     # create log & ckpt
-    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name + '_' + datetime.now().strftime('%m%d%H%M%S_'))
+    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name + '_' + datetime.now().strftime('%m%d%H%M%S'))
     args.ckpt_dir = os.path.join(args.ckpt_dir, args.name)
     os.makedirs(args.log_dir, exist_ok=False)
     print(f'creating folder {args.log_dir}')

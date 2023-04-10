@@ -24,6 +24,7 @@ class CATCHDataset(torch.utils.data.Dataset):
         if cancer is not None:                          # e.g: cancer = Melanoma
             print(f'==> CATCH Dataset with cancer = {cancer}')
             for center_dir in center_list:              # ../CATCH/TRAIN_SET
+                assert os.path.exists(center_dir)
                 for f in os.listdir(center_dir):        # Melanoma_33_1_patch_129.jpg
                     if f.startswith(cancer):
                         self.image_list.append((center_dir, f)) # (../CATCH/TRAIN_SET, Melanoma_33_1_patch_129.jpg)
