@@ -49,17 +49,17 @@ class CATCHDataset(torch.utils.data.Dataset):
                 nearby_indices = [self.patch_id] + nearby_indices
 
             for i, nearby_index in enumerate(nearby_indices):
-                nearby_img_name = img_name.replace('.jpg', '_{:03}.jpg'.format(nearby_index))
+                nearby_img_name = img_name.replace('.jpg', '_{:01}.jpg'.format(nearby_index))
                 nearby_img_path = os.path.join(nearby_dir, nearby_img_name)
                 if os.path.exists(nearby_img_path):
                     break
 
                 # no image found
                 if i == 0 and self.patch_id != None:
-                    raise SyntaxError('Can not find patch_id = {:03}'.format(self.patch_id))
+                    raise SyntaxError('Can not find patch_id = {:01}'.format(self.patch_id))
 
                 if i == (len(nearby_indices) - 1):
-                    raise SyntaxError('Can not find patch_id in range [{:03}, {:03}]'.format(0, 9))
+                    raise SyntaxError('Can not find patch_id in range [{:01}, {:01}]'.format(0, 9))
 
             # read image
             origin_img = Image.open(center_img_path).convert('RGB')

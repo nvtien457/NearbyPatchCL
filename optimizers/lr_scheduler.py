@@ -9,6 +9,10 @@ class LR_Scheduler(LRScheduler):
                  num_epochs:int, iter_per_epoch:int, warmup_epochs:int,
                  warmup_lr:float, base_lr:float, final_lr:float, 
                  constant_predictor_lr=False):
+        
+        assert num_epochs > 0 and iter_per_epoch > 0 and warmup_epochs >= 0
+        assert warmup_epochs <= num_epochs
+        assert warmup_lr >= 0 and base_lr >= 0 and final_lr >= 0
       
         self.base_lr = base_lr
         self.constant_predictor_lr = constant_predictor_lr

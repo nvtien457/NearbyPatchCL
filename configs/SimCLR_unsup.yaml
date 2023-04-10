@@ -10,8 +10,8 @@ model:
 dataset:
   name: CATCH
   params:
-    center_list: ['../CATCH/TRAIN_SET']
-    cancer: Melanoma
+    center_list: ['/content/Histiocytoma/TRAIN_SET', '/content/Melanoma/TRAIN_SET']
+    cancer: None
     patch_id: None
 
 aug:
