@@ -39,15 +39,15 @@ def main(args):
     args.train.scheduler.params['final_lr']  = args.train.scheduler.params['final_lr']  * args.train.batch_size / 256
 
     # Number of iteration per epoch
-    iter_per_epoch = len(train_loader)
+    iter_per_epoch = len(train_loader) // args.train.iters_to_accumulate
     args.train.scheduler.params['iter_per_epoch'] = iter_per_epoch
 
     optimizer = get_optimizer(optimizer_cfg=args.train.optimizer, model=model)
     scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
 
     # create log & ckpt
-    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + datetime.now().strftime('%m%d%H%M%S_') + args.name)
-    args.ckpt_dir = os.path.join(args.ckpt_dir, datetime.now().strftime('%m%d%H%M%S_') + args.name)
+    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name + '_' + datetime.now().strftime('%m%d%H%M%S_'))
+    args.ckpt_dir = os.path.join(args.ckpt_dir, args.name)
     os.makedirs(args.log_dir, exist_ok=False)
     print(f'creating folder {args.log_dir}')
     os.makedirs(args.ckpt_dir, exist_ok=True)
@@ -66,14 +66,9 @@ def main(args):
         start_epoch = checkpoint['epoch'] + 1
         model.load_state_dict(checkpoint['state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer'])
+        scheduler.load_state_dict(checkpoint['scheduler'])
 
-        # Because optimizer is created, scheduler must be created too
-        lr_scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
-
-        lr_scheduler.iter = args.start_epoch * len(train_loader)
-        lr_scheduler.current_lr = lr_scheduler.lr_schedule[lr_scheduler.iter]
-
-        bess_loss = logger.load_event(args.resume.event, checkpoint['epoch'])
+        best_loss = logger.load_event(args.resume.event, checkpoint['epoch'])
 
         print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume, checkpoint['epoch'], lr_scheduler.iter, best_loss))
 
@@ -101,12 +96,13 @@ def main(args):
             'backbone': args.model.backbone,
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict(),
+            'scheduler': scheduler.state_dict(),
             'epoch': epoch,
         }
 
         if loss < best_loss:
             best_loss = loss
-            filepath.replace('ckpt_', 'ckpt_best_')
+            filepath = filepath.replace('ckpt_', 'ckpt_best_')
             torch.save(checkpoint, filepath)
 
         elif (epoch + 1) % args.train.save_interval == 0:

@@ -5,13 +5,6 @@ from torch import nn
 from torch.nn.parameter import Parameter
 from torch.optim.optimizer import Optimizer
 
-def main(): # Example
-    import torchvision
-    model = torchvision.models.resnet18(pretrained=False) 
-    # optim = torch.optim.Adam(model.parameters(), lr=0.0001) 
-    optim = torch.optim.SGD(model.parameters(),lr=0.2, momentum=0.9, weight_decay=1.5e-6)
-    optim = LARC(optim)
-
 class LARC(Optimizer):
     """
     :class:`LARC` is a pytorch implementation of both the scaling and clipping variants of LARC,
@@ -111,6 +104,13 @@ class LARC(Optimizer):
         for i, group in enumerate(self.optim.param_groups):
             group['weight_decay'] = weight_decays[i]
 
+
+def main(): # Example
+    import torchvision
+    model = torchvision.models.resnet18(pretrained=False) 
+    # optim = torch.optim.Adam(model.parameters(), lr=0.0001) 
+    optim = torch.optim.SGD(model.parameters(),lr=0.2, momentum=0.9, weight_decay=1.5e-6)
+    optim = LARC(optim)
 
 
 if __name__ == "__main__":

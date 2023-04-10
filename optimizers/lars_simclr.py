@@ -41,10 +41,10 @@ class LARS_simclr(Optimizer):
             weight_decay = group['weight_decay']
             momentum = group['momentum']
             lr = group['lr']
-
             trust_coef = group['trust_coef']
             # print(group['name'])
             # eps = group['eps']
+            
             for p in group['params']:
                 # breakpoint()
                 if p.grad is None:

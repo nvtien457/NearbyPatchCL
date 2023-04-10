@@ -1,7 +1,6 @@
-from tqdm import tqdm
-import time
+class A:
+    def __init__(self):
+        self.state = 2
 
-progress = tqdm(range(4, 10), desc='Training', initial=4, total=10)
-for e in progress:
-    print('Epoch', e)
-    time.sleep(5)
+a = A()
+print(a.__class__.__name__)

@@ -1,21 +1,29 @@
 import torch
 import numpy as np
-# from torch.optim.lr_scheduler import _LRScheduler
+from torch.optim import Optimizer
+from torch.optim.lr_scheduler import LRScheduler
 
 
-class LR_Scheduler(object):
-    def __init__(self, optimizer, warmup_epochs, warmup_lr, num_epochs, base_lr, final_lr, iter_per_epoch, constant_predictor_lr=False):
+class LR_Scheduler(LRScheduler):
+    def __init__(self, optimizer:Optimizer, 
+                 num_epochs:int, iter_per_epoch:int, warmup_epochs:int,
+                 warmup_lr:float, base_lr:float, final_lr:float, 
+                 constant_predictor_lr=False):
+      
         self.base_lr = base_lr
         self.constant_predictor_lr = constant_predictor_lr
+
         warmup_iter = iter_per_epoch * warmup_epochs
         warmup_lr_schedule = np.linspace(warmup_lr, base_lr, warmup_iter)
         decay_iter = iter_per_epoch * (num_epochs - warmup_epochs)
         cosine_lr_schedule = final_lr + 0.5*(base_lr - final_lr) * (1 + np.cos(np.pi*np.arange(decay_iter) / decay_iter))
-        
+      
         self.lr_schedule = np.concatenate((warmup_lr_schedule, cosine_lr_schedule))
         self.optimizer = optimizer
-        self.iter = 0
+        self.iter = -1
         self.current_lr = 0
+        
+        super().__init__(optimizer)
 
     def step(self):
         for param_group in self.optimizer.param_groups:
@@ -31,19 +39,3 @@ class LR_Scheduler(object):
         
     def get_lr(self):
         return self.current_lr
-
-if __name__ == "__main__":
-    import torchvision
-    model = torchvision.models.resnet50()
-    optimizer = torch.optim.SGD(model.parameters(), lr=999)
-    epochs = 100
-    n_iter = 1000
-    scheduler = LR_Scheduler(optimizer, 10, 1, epochs, 3, 0, n_iter)
-    import matplotlib.pyplot as plt
-    lrs = []
-    for epoch in range(epochs):
-        for it in range(n_iter):
-            lr = scheduler.step()
-            lrs.append(lr)
-    plt.plot(lrs)
-    plt.show()

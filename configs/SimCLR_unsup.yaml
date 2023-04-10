@@ -44,6 +44,7 @@ train:
       warmup_epochs: 10
       warmup_lr: 0.0001
       final_lr: 0.00001
+      constant_predictor_lr: False
 
 seed: None
 num_workers: 1
