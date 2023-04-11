@@ -1,55 +1,51 @@
 name: SimSiam_CIFAR10_100
 
+model:
+  name: simsiam
+  backbone: resnet50
+  params:
+    dim: 2048
+    pred_dim: 512
+
+dataset:
+  name: CATCH
+  params:
+    name: 3
+
+aug:
+  name: moco
+  params:
+    version: v2
+
 train:
-  batch_size: 512
-  iters_to_accumulate: 1
-  train_dir: ./data
-  num_epochs: 15
+  batch_size: 128
+  iters_to_accumulate: 4
+  num_epochs: 100
   nodes: 1
+  save_interval: 5
 
   criterion:
     name: neg-cosine
-    param:
+    params:
       version: simplified
-  metrics: ['acc@1', 'acc@5']
+  metrics: ['acc@1']
 
   optimizer:
     name: sgd
-    param:
+    params:
       lr: 0.05
       momentum: 0.9
       weight_decay: 0.0001
       
   scheduler:
     name: lr_scheduler
-    param:
+    params:
       warmup_epochs: 10
-      warmup_lr: 0.0001
-      final_lr: 0.00001
+      warmup_lr: 0.001
+      final_lr: 0.0001
 
-  knn_monitor: True
-  knn_interval: 5
-  knn_k: 200
-  save_interval: 5
-
-model:
-  name: simsiam
-  backbone: resnet18
-  param:
-    dim: 2048
-    pred_dim: 512
-
-dataset:
-  name: cifar10
-  image_size: 32
-  num_workers: 1
-
-aug:
-  name: moco
-  param:
-    version: v2
-
-seed: None
+seed: 47
+num_workers: 1
 tensorboard: True
 matplotlib: True
 

@@ -28,8 +28,6 @@ def get_model(model_cfg):
 
     elif model_cfg.name == 'simtriplet':
         model = SimTriplet(get_backbone(backbone=model_cfg.backbone))
-        if  model_cfg.params.proj_layers is not None:
-            model.projector.set_layers(model_cfg.params.proj_layers)
 
     elif model_cfg.name == 'byol':
         model = BYOL(get_backbone(backbone=model_cfg.backbone), **model_cfg.params)

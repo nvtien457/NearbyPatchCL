@@ -20,7 +20,7 @@ aug:
 train:
   batch_size: 128
   iters_to_accumulate: 8
-  num_epochs: 15
+  num_epochs: 100
   save_interval: 5
 
   criterion:
@@ -32,7 +32,7 @@ train:
   optimizer:
     name: sgd
     params:
-      lr: 0.05
+      lr: 0.4
       momentum: 0.9
       weight_decay: 0.000001
       
@@ -44,7 +44,7 @@ train:
       final_lr: 0.0001
       constant_predictor_lr: False
 
-seed: None
+seed: 47
 num_workers: 1
 tensorboard: True
 matplotlib: True

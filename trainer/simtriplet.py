@@ -3,9 +3,9 @@ import torch
 from tools import accuracy
 
 def simtriplet_train(inputs, labels, model, criterion, args):
-    img_1 = inputs[0]
-    img_2 = inputs[1]
-    img_3 = inputs[2]
+    img_1 = inputs[0][0]
+    img_2 = inputs[0][1]
+    img_3 = inputs[1][0]
     batch_size = labels.shape[0]
 
     img_1 = img_1.to(args.device)

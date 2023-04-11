@@ -1,38 +1,9 @@
-name: MoCov1_CIFAR10_100
-
-train:
-  batch_size: 512
-  iters_to_accumulate: 4
-  train_dir: ./data
-  num_epochs: 15
-
-  criterion:
-    name: CE
-    param: None
-  metrics: ['acc@1', 'acc@5']
-
-  optimizer:
-    name: sgd
-    param:
-      lr: 0.05
-      momentum: 0.9
-      weight_decay: 0.0001
-  scheduler:
-    name: lr_scheduler
-    param:
-      warmup_epochs: 10
-      warmup_lr: 0.0001
-      final_lr: 0.00001
-
-  knn_monitor: True
-  knn_interval: 5
-  knn_k: 200
-  save_interval: 5
+name: MoCo_CIFAR10_100
 
 model:
   name: moco
-  backbone: resnet18
-  param:
+  backbone: resnet50
+  params:
     dim: 128
     K: 65536
     m: 0.999
@@ -40,18 +11,47 @@ model:
     mlp: False
 
 dataset:
-  name: cifar10
-  image_size: 32
-  num_workers: 1
+  name: CATCH
+  params:
+    name: 3
 
 aug:
   name: moco
-  version: v1
+  params:
+    image_size: 128
+    version: v2
 
-seed: None
+train:
+  batch_size: 128
+  iters_to_accumulate: 4
+  num_epochs: 100
+  save_interval: 5
+
+  criterion:
+    name: CE
+    params: None
+  metrics: ['acc@1']
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 0.05
+      momentum: 0.9
+      weight_decay: 0.0001
+
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 10
+      warmup_lr: 0.001
+      final_lr: 0.0001
+
+seed: 47
+num_workers: 1
 tensorboard: True
 matplotlib: True
 
 resume:
+  status: False
   ckpt: None
   event: None

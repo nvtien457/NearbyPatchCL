@@ -10,6 +10,8 @@ dataset:
   name: CATCH
   params:
     name: 3
+    use_nearby: True
+    patch_id: 0
 
 aug:
   name: moco
@@ -43,7 +45,7 @@ train:
       final_lr: 0.0005
 
 
-seed: None
+seed: 47
 num_workers: 1
 tensorboard: True
 matplotlib: True

@@ -33,10 +33,10 @@ def main(args):
     criterion = get_criterion(criterion_cfg=args.train.criterion)
 
     # Use Mixed Precision Training
-    args.train.optimizer.params['lr']        = args.train.optimizer.params['lr']        * args.train.batch_size / 256
-    args.train.scheduler.params['base_lr']   = args.train.scheduler.params['base_lr']   * args.train.batch_size / 256
-    args.train.scheduler.params['warmup_lr'] = args.train.scheduler.params['warmup_lr'] * args.train.batch_size / 256
-    args.train.scheduler.params['final_lr']  = args.train.scheduler.params['final_lr']  * args.train.batch_size / 256
+    args.train.optimizer.params['lr']        = args.train.optimizer.params['lr']        * args.train.batch_size * args.train.iters_to_accumulate / 256
+    args.train.scheduler.params['base_lr']   = args.train.scheduler.params['base_lr']   * args.train.batch_size * args.train.iters_to_accumulate / 256
+    args.train.scheduler.params['warmup_lr'] = args.train.scheduler.params['warmup_lr'] * args.train.batch_size * args.train.iters_to_accumulate / 256
+    args.train.scheduler.params['final_lr']  = args.train.scheduler.params['final_lr']  * args.train.batch_size * args.train.iters_to_accumulate / 256
 
     # Number of iteration per epoch
     iter_per_epoch = len(train_loader) // args.train.iters_to_accumulate

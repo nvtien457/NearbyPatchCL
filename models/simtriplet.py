@@ -73,11 +73,13 @@ class prediction_MLP(nn.Module):
         return x 
 
 class SimTriplet(nn.Module):
-    def __init__(self, backbone=resnet50()):
+    def __init__(self, backbone=resnet50(), proj_layers=3):
         super().__init__()
 
         self.backbone = backbone
         self.projector = projection_MLP(backbone.output_dim)
+        self.proj_layers = proj_layers
+        self.projector.set_layers(proj_layers)
 
         self.encoder = nn.Sequential( # f encoder
             self.backbone,

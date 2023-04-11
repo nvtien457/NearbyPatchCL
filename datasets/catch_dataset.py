@@ -43,11 +43,21 @@ class CATCHDataset(torch.utils.data.Dataset):
             self.cancer = cancer
         
         self.list_image_path = []
+        self.missing_image_path = []
         for file in os.listdir(self.folder_dataset_path):   # .txt file contain path to image
             f = open(os.path.join(self.folder_dataset_path, file), 'r', encoding="utf-8")
             for path_str in f.readlines():
-                self.list_image_path.append(os.path.join(self.data_dir, path_str.replace('\n', '') + '.jpg'))
+                image_path = os.path.join(self.data_dir, path_str.replace('\n', '') + '.jpg')
+                patch_number = int(image_path[-7:-4]) # 000 (..._000.jpg)
+                if os.path.exists(image_path):
+                    self.list_image_path.append(image_path)
+                elif patch_number > 800:
+                    self.missing_image_path.append(image_path)
+                else:
+                    raise ValueError(f'Image {image_path} is not loaded')
             f.close()
+            
+        print('Missing images:', self.missing_image_path)
 
     def __getitem__(self, idx):
         image_path = self.list_image_path[idx]
@@ -62,7 +72,7 @@ class CATCHDataset(torch.utils.data.Dataset):
                 nearby_indices = [self.patch_id] + nearby_indices   # [0, ...]
 
             for i, nearby_index in enumerate(nearby_indices):
-                nearby_image_path = image_path.replace('.jpg', '_{:01}.jpg'.format(nearby_index))
+                nearby_image_path = nearby_image_path.replace('.jpg', '_{:01}.jpg'.format(nearby_index))
                 if os.path.exists(nearby_image_path):
                     break
 
