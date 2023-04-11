@@ -42,6 +42,7 @@ class MoCoTransform:
                 T.RandomGrayscale(p=0.2),
                 T.ColorJitter(0.4, 0.4, 0.4, 0.4),
                 T.RandomHorizontalFlip(),
+                T.RandomVerticalFlip(),
                 T.ToTensor(),
                 normalize
             ])
@@ -56,6 +57,7 @@ class MoCoTransform:
                 T.RandomGrayscale(p=0.2),
                 T.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
                 T.RandomHorizontalFlip(),
+                T.RandomVerticalFlip(),
                 T.ToTensor(),
                 normalize
             ])

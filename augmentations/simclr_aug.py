@@ -1,4 +1,5 @@
 import torchvision
+import torchvision.transforms as T
 
 imagenet_mean_std = [[0.485, 0.456, 0.406],[0.229, 0.224, 0.225]]
 
@@ -16,19 +17,20 @@ class SimCLRTransform:
         )
         self.train_transform = torchvision.transforms.Compose(
             [
-                torchvision.transforms.RandomResizedCrop(size=image_size),
-                torchvision.transforms.RandomHorizontalFlip(),  # with 0.5 probability
-                torchvision.transforms.RandomApply([color_jitter], p=0.8),
-                torchvision.transforms.RandomGrayscale(p=0.2),
-                torchvision.transforms.ToTensor(),
-                torchvision.transforms.Normalize(*mean_std)
+                T.RandomResizedCrop(size=image_size),
+                T.RandomHorizontalFlip(),  # with 0.5 probability
+                T.RandomVerticalFlip(),
+                T.RandomApply([color_jitter], p=0.8),
+                T.RandomGrayscale(p=0.2),
+                T.ToTensor(),
+                T.Normalize(*mean_std)
             ]
         )
 
         self.test_transform = torchvision.transforms.Compose(
             [
-                torchvision.transforms.Resize(size=image_size),
-                torchvision.transforms.ToTensor(),
+                T.Resize(size=image_size),
+                T.ToTensor(),
             ]
         )
 
