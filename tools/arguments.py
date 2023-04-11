@@ -53,6 +53,8 @@ def get_args():
     parser.add_argument('--data_dir', type=str, default='/content')
     parser.add_argument('--log_dir', type=str)
     parser.add_argument('--ckpt_dir', type=str)
+    parser.add_argument('--mem_dir', type=str, default='/content/TRAIN_VAL_SET')
+    parser.add_argument('--val_dir', type=str, default='/content/VAL_SET')
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--eval_from', type=str, default=None)
     parser.add_argument('--hide_progress', action='store_true')

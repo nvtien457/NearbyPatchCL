@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import torch.nn.functional as F 
 import torch
-from sklearn.metrics import confusion_matrix
+
 # code copied from https://colab.research.google.com/github/facebookresearch/moco/blob/colab-notebook/colab/moco_cifar10_demo.ipynb#scrollTo=RI1Y8bSImD7N
 # test using a knn monitor
 def knn_monitor(net, memory_data_loader, test_data_loader, epoch, k=200, t=0.1, hide_progress=False):
@@ -37,7 +37,7 @@ def knn_monitor(net, memory_data_loader, test_data_loader, epoch, k=200, t=0.1, 
             # total_top5 += (pred_labels[:, :5] == target.view(-1, 1).expand(-1, 5)).any(dim=-1).sum().item()
             test_bar.set_postfix({'Accuracy': f'{total_top1 / total_num * 100:.2f}'})
 
-    return total_top1 / total_num * 100, confusion_matrix(y_true, y_pred)
+    return total_top1 / total_num * 100
 
 # knn monitor as in InstDisc https://arxiv.org/abs/1805.01978
 # implementation follows http://github.com/zhirongw/lemniscate.pytorch and https://github.com/leftthomas/SimCLR

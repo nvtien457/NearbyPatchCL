@@ -10,11 +10,13 @@ from .simtriplet import simtriplet_train
 
 import sys
 sys.path.append('../')
-from tools import AverageMeter
+from tools import AverageMeter, knn_monitor
 
 class Trainer:
-    def __init__(self, train_loader, model, scaler, criterion, optimizer, scheduler, logger, args):
+    def __init__(self, train_loader, memory_loader, val_loader, model, scaler, criterion, optimizer, scheduler, logger, args):
         self.train_loader = train_loader
+        self.memory_loader = memory_loader
+        self.val_loader = val_loader
         self.model = model
         self.scaler = scaler
         self.criterion = criterion
@@ -81,6 +83,13 @@ class Trainer:
                 if key in self.metric_meter.keys():
                     # print(key, value, batch_size)
                     self.metric_meter[key].update(value, n=batch_size)
+                    
+            if self.args.train.knn_monitor and (epoch + 1) % self.args.train.knn_interval == 0:
+                accuracy = knn_monitor(self.model.backbone, self.memory_loader, self.val_loader, self.args.device,
+                                    k=min(self.args.train.knn_k, len(self.memory_loader.dataset)),
+                                    hide_progress=self.args.hide_progress)
+                
+                data_dict['knn_acc'] = accuracy
 
             # update visual training infor
             data_dict['lr'] = self.optimizer.param_groups[0]['lr']

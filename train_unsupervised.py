@@ -4,8 +4,7 @@ from datetime import datetime
 import shutil
 
 import torch
-import torch.nn as nn
-import torch.utils.data as data
+import torchvision
 
 from models import get_model
 from datasets import get_dataset
@@ -16,7 +15,7 @@ from tools import get_args, Logger
 from trainer import Trainer
 
 def main(args):
-    train_loader = data.DataLoader(
+    train_loader = torch.utils.data.DataLoader(
         dataset=get_dataset(
             dataset_cfg=args.dataset,
             transform=get_aug(args.aug),
@@ -24,6 +23,20 @@ def main(args):
         ),
         batch_size=args.train.batch_size,
         shuffle=True,
+        **args.dataloader_kwargs
+    )
+    
+    memory_loader = torch.utils.data.DataLoader(
+        dataset=torchvision.datasets.ImageFolder(root=args.mem_dir, transform=get_aug(args.aug, train=False)),
+        shuffle=False,
+        batch_size=args.train.batch_size,
+        **args.dataloader_kwargs
+    )
+    
+    val_loader = torch.utils.data.DataLoader(
+        dataset=torchvision.datasets.ImageFolder(root=args.val_dir, transform=get_aug(args.aug, train=False)),
+        shuffle=False,
+        batch_size=args.train.batch_size,
         **args.dataloader_kwargs
     )
 
@@ -70,13 +83,13 @@ def main(args):
 
         best_loss = logger.load_event(args.resume.event, checkpoint['epoch'])
 
-        print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume, checkpoint['epoch'], lr_scheduler.iter, best_loss))
+        print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume, checkpoint['epoch'], scheduler.iter, best_loss))
 
     # Start training
-    global_progress = tqdm(range(start_epoch, args.train.stop_epochs), initial=start_epoch, total=args.train.stop_epochs, desc='Training')
+    global_progress = tqdm(range(start_epoch, args.train.stop_epoch), initial=start_epoch, total=args.train.stop_epoch, desc='Training')
 
     model = model.to(args.device)
-    trainer = Trainer(train_loader=train_loader, model=model, scaler=scaler,
+    trainer = Trainer(train_loader=train_loader, memory_loader=memory_loader, val_loader=val_loader, model=model, scaler=scaler,
                     criterion=criterion, optimizer=optimizer, scheduler=scheduler, 
                     logger=logger, args=args)
 

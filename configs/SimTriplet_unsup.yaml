@@ -9,7 +9,7 @@ model:
 dataset:
   name: CATCH
   params:
-    name: 3
+    name: 10
     use_nearby: True
     patch_id: 0
 
@@ -21,9 +21,13 @@ aug:
 
 train:
   batch_size: 128
-  iters_to_accumulate: 4
-  num_epochs: 100
+  iters_to_accumulate: 2
+  stop_epoch: 200
+  num_epochs: 200
   save_interval: 5
+  knn_monitor: True
+  knn_interval: 5
+  knn_k: 200
 
   criterion:
     name: neg-cosine
