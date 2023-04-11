@@ -165,6 +165,7 @@ def get_args():
         for k, v in args.dataset.params.__dict__.items():
             dataset_params[k] = v
         dataset_params['data_dir'] = args.data_dir
+        dataset_params['name'] = str(dataset_params['name'])
         vars(args.dataset)['params'] = dataset_params
 
     # aug.params

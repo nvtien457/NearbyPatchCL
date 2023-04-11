@@ -20,11 +20,11 @@ class CATCHDataset(torch.utils.data.Dataset):
             + use_nearby = True:    (image, nearby)
             + use_nearby = False:   (image)
     '''
-    def __init__(self, data_dir:str, name:str = None, use_nearby:bool = False, patch_id:int = None, cancer:str = None, transform=None):
+    def __init__(self, data_dir:str, name:str, use_nearby:bool = False, patch_id:int = None, cancer:str = None, transform=None):
         assert os.path.exists(data_dir)
         
         available_dataset = os.listdir('data')
-        if name not in [None] + available_dataset:
+        if name not in available_dataset:
             raise ValueError(f'Folder dataset "{name}" not in /data')
         
         if use_nearby and (patch_id not in [None] + [i for i in range(9)]):
@@ -46,7 +46,7 @@ class CATCHDataset(torch.utils.data.Dataset):
         for file in os.listdir(self.folder_dataset_path):   # .txt file contain path to image
             f = open(os.path.join(self.folder_dataset_path, file), 'r', encoding="utf-8")
             for path_str in f.readlines():
-                self.list_image_path.append(os.path.join(self.data_dir, path_str.replace('\n', '')))
+                self.list_image_path.append(os.path.join(self.data_dir, path_str.replace('\n', '') + '.jpg'))
             f.close()
 
     def __getitem__(self, idx):
@@ -80,14 +80,14 @@ class CATCHDataset(torch.utils.data.Dataset):
             if self.transform:
                 origin_img = self.transform(origin_img)
                 nearby_img = self.transform(nearby_img)
-            return origin_img, nearby_img
+            return origin_img, nearby_img, 0
             
         else:
             # Only 1 image
             image = Image.open(image_path).convert('RGB')
             if self.transform:
                 image = self.transform(image)
-            return image
+            return image, 0
         
 
     def __len__(self):
