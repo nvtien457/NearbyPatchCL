@@ -9,9 +9,7 @@ model:
 dataset:
   name: CATCH
   params:
-    center_list: ['/content/Histiocytoma/TRAIN_SET', '/content/Melanoma/TRAIN_SET']
-    cancer: None
-    patch_id: None
+    name: 3
 
 aug:
   name: moco
@@ -28,7 +26,7 @@ train:
   criterion:
     name: neg-cosine
     params: None
-  metrics: ['acc@1', 'acc@5']
+  metrics: ['acc@1']
 
   optimizer:
     name: sgd
@@ -42,7 +40,7 @@ train:
     params:
       warmup_epochs: 30
       warmup_lr: 0.01
-      final_lr: 0.00005
+      final_lr: 0.0005
 
 
 seed: None

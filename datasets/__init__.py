@@ -1,5 +1,5 @@
-import torch
-import torchvision
+# import torch
+# import torchvision
 
 from .catch_dataset import CATCHDataset
 

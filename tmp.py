@@ -1,6 +1,3 @@
-class A:
-    def __init__(self):
-        self.state = 2
+from datasets.catch_dataset import FolderDataset
 
-a = A()
-print(a.__class__.__name__)
+ds = FolderDataset(data_dir='/content', name='3')

@@ -5,85 +5,90 @@ import random
 
 class CATCHDataset(torch.utils.data.Dataset):
     '''
-    CATCH Datset
+    CATCH Dataset load from a folder contain .txt files
+    Currently use for train self-supervised (not check with supervised, ...)
     Input:
-        + center_list   list of folders contain center patch
-        + cancer        name of specific cancer to choose, if None every cancer are chosen
-        + patch_id      in range [0, 8], if None patch_id will be random
+        + data_dir      The directory contains all images (or folder contains images)
+        + name          Name of folder dataset (include in /data) contains .txt files saving name of images
+        + use_nearby    Return nearby patch (e.g. SimTriplet)
+        + patch_id      Nearby patch index  (if use_nearby = True) in range [0, 8]
+                        if patch_id = None, random patch_id for each image
+        + cancer        list of cancer's names to choose, if None every cancer are chosen
         + transform
     Output:
+        List of images
+            + use_nearby = True:    (image, nearby)
+            + use_nearby = False:   (image)
     '''
-    def __init__(self, center_list:str, image_list=None, cancer:str = None, use_nearby:bool = False, patch_id=None, train=True, transform=None):
-        self.center_patch_list = center_list
-        self.transform = transform
-        self.cancer_type = cancer
-        self.patch_id = patch_id
-        self.use_nearby = use_nearby
-
-        if image_list == None:
-            self.image_list = []
-
-            if cancer is not None:                          # e.g: cancer = Melanoma
-                print(f'==> CATCH Dataset with cancer = {cancer}')
-                for center_dir in center_list:              # ../CATCH/TRAIN_SET
-                    assert os.path.exists(center_dir)
-                    for f in os.listdir(center_dir):        # Melanoma_33_1_patch_129.jpg
-                        if f.startswith(cancer):
-                            self.image_list.append((center_dir, f)) # (../CATCH/TRAIN_SET, Melanoma_33_1_patch_129.jpg)
+    def __init__(self, data_dir:str, name:str = None, use_nearby:bool = False, patch_id:int = None, cancer:str = None, transform=None):
+        assert os.path.exists(data_dir)
+        
+        available_dataset = os.listdir('data')
+        if name not in [None] + available_dataset:
+            raise ValueError(f'Folder dataset "{name}" not in /data')
+        
+        if use_nearby and (patch_id not in [None] + [i for i in range(9)]):
+            raise ValueError('patch_id out of range [0, 8]')
             
-            else:                                           # Get all types of cancer
-                print(f'==> CATCH Dataset with all types of cancer')
-                for center_dir in center_list:              # ../CATCH/LAB_DEPLOY/TRAIN_SET
-                    for f in os.listdir(center_dir):        # Histiocytoma_21_2_34056.0_42418.0.jpg
-                        self.image_list.append((center_dir, f))     # (../CATCH/LAB_DEPLOY/TRAIN_SET, Histiocytoma_21_2_34056.0_42418.0.jpg)
+        self.data_dir = data_dir
+        self.use_nearby = use_nearby
+        self.patch_id = patch_id
+        self.transform = transform
+        self.folder_dataset_path = os.path.join('data', name)
+        
+        if cancer is None:
+            self.cancer = ['Histiocytoma', 'MCT', 'Melanoma',
+                           'Plasmacytoma', 'PNST', 'SCC', 'Trichoblastoma']
         else:
-            self.image_list = image_list
-
-        self.size = len(self.image_list)
+            self.cancer = cancer
+        
+        self.list_image_path = []
+        for file in os.listdir(self.folder_dataset_path):   # .txt file contain path to image
+            f = open(os.path.join(self.folder_dataset_path, file), 'r', encoding="utf-8")
+            for path_str in f.readlines():
+                self.list_image_path.append(os.path.join(self.data_dir, path_str.replace('\n', '')))
+            f.close()
 
     def __getitem__(self, idx):
-        if idx < self.size:
-            center_dir, img_name = self.image_list[idx]
-            center_img_path = os.path.join(center_dir, img_name)
+        image_path = self.list_image_path[idx]
 
-            if self.use_nearby:
-                nearby_dir = center_dir.replace('_SET', '_SET_NEAR')
-                nearby_indices = [i for i in range(9)]
-                random.shuffle(nearby_indices)
+        if self.use_nearby:
+            # Use center_image & nearby_image (2 images)
+            nearby_image_path = image_path.replace('_SET', '_SET_NEAR')
+            nearby_indices = [i for i in range(9)]
+            random.shuffle(nearby_indices)
 
-                if self.patch_id is not None:
-                    nearby_indices = [self.patch_id] + nearby_indices
+            if self.patch_id is not None:   # e.g. patch_id = 0
+                nearby_indices = [self.patch_id] + nearby_indices   # [0, ...]
 
-                for i, nearby_index in enumerate(nearby_indices):
-                    nearby_img_name = img_name.replace('.jpg', '_{:01}.jpg'.format(nearby_index))
-                    nearby_img_path = os.path.join(nearby_dir, nearby_img_name)
-                    if os.path.exists(nearby_img_path):
-                        break
+            for i, nearby_index in enumerate(nearby_indices):
+                nearby_image_path = image_path.replace('.jpg', '_{:01}.jpg'.format(nearby_index))
+                if os.path.exists(nearby_image_path):
+                    break
 
-                    # no image found
-                    if i == 0 and self.patch_id != None:
-                        raise SyntaxError('Can not find patch_id = {:01}'.format(self.patch_id))
+                # no image found with patch_id provided
+                if i == 0 and self.patch_id is not None:
+                    raise ValueError('Can not find patch_id = {:01} with image {}'.format(self.patch_id, image_path))
 
-                    if i == (len(nearby_indices) - 1):
-                        raise SyntaxError('Can not find patch_id in range [{:01}, {:01}]'.format(0, 9))
+                if i == (len(nearby_indices) - 1):
+                    raise ValueError('Can not find patch_id in range [{:01}, {:01}] with image {}'.format(0, 9, image_path))
+            
+            # read image
+            origin_img = Image.open(image_path).convert('RGB')
+            nearby_img = Image.open(nearby_image_path).convert('RGB')
 
-                # read image
-                origin_img = Image.open(center_img_path).convert('RGB')
-                nearby_img = Image.open(nearby_img_path).convert('RGB')
-
-                if self.transform:
-                    origin_1, origin_2 = self.transform(origin_img)
-                    nearby_1, nearby_2 = self.transform(nearby_img)
-                    return (origin_1, origin_2, nearby_1), 0
-                else:
-                    return (origin_img, origin_img, nearby_img), 0
-            else:
-                img = Image.open(center_img_path).convert('RGB')
-                if self.transform:
-                    img = self.transform(img)
-                return img, 0
+            if self.transform:
+                origin_img = self.transform(origin_img)
+                nearby_img = self.transform(nearby_img)
+            return origin_img, nearby_img
+            
         else:
-            raise Exception
+            # Only 1 image
+            image = Image.open(image_path).convert('RGB')
+            if self.transform:
+                image = self.transform(image)
+            return image
+        
 
     def __len__(self):
-        return self.size
+        return len(self.list_image_path)

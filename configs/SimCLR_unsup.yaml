@@ -2,7 +2,7 @@ name: SimCLR_CATCH_100
 
 model:
   name: simclr
-  backbone: resnet18
+  backbone: resnet50
   castrate: True
   params:
     dim: 128
@@ -10,14 +10,12 @@ model:
 dataset:
   name: CATCH
   params:
-    center_list: ['/content/Histiocytoma/TRAIN_SET', '/content/Melanoma/TRAIN_SET']
-    cancer: None
-    patch_id: None
+    name: 3
 
 aug:
   name: simclr
   params:
-    image_size: 224
+    image_size: 128
 
 train:
   batch_size: 128
@@ -29,7 +27,7 @@ train:
     name: NT-Xent
     params:
       temperature: 0.07
-  metrics: ['acc@1', 'acc@5']
+  metrics: ['acc@1']
 
   optimizer:
     name: sgd
@@ -42,8 +40,8 @@ train:
     name: lr_scheduler
     params:
       warmup_epochs: 10
-      warmup_lr: 0.0001
-      final_lr: 0.00001
+      warmup_lr: 0.001
+      final_lr: 0.0001
       constant_predictor_lr: False
 
 seed: None

@@ -50,7 +50,7 @@ def get_args():
     parser.add_argument('--resume', action='store_true')
     parser.add_argument('--debug_subset_size', type=int, default=8)
     parser.add_argument('--download', action='store_true', help="if can't find dataset, download from web")
-    parser.add_argument('--data_dir', type=str, default='../data')
+    parser.add_argument('--data_dir', type=str, default='/content')
     parser.add_argument('--log_dir', type=str)
     parser.add_argument('--ckpt_dir', type=str)
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
@@ -157,11 +157,14 @@ def get_args():
 
     # datset.params
     if args.dataset.params == None:
-        vars(args.dataset)['params'] = dict()
+        vars(args.dataset)['params'] = {
+            'data_dir': args.data_dir
+        }
     else:
         dataset_params = dict()
         for k, v in args.dataset.params.__dict__.items():
             dataset_params[k] = v
+        dataset_params['data_dir'] = args.data_dir
         vars(args.dataset)['params'] = dataset_params
 
     # aug.params
