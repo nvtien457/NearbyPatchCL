@@ -73,7 +73,7 @@ def main(args):
         print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume, checkpoint['epoch'], lr_scheduler.iter, best_loss))
 
     # Start training
-    global_progress = tqdm(range(start_epoch, args.train.num_epochs), initial=start_epoch, total=args.train.num_epochs, desc='Training')
+    global_progress = tqdm(range(start_epoch, args.train.stop_epochs), initial=start_epoch, total=args.train.stop_epochs, desc='Training')
 
     model = model.to(args.device)
     trainer = Trainer(train_loader=train_loader, model=model, scaler=scaler,

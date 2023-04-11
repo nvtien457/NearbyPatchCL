@@ -20,7 +20,8 @@ aug:
 train:
   batch_size: 128
   iters_to_accumulate: 8
-  num_epochs: 100
+  stop_epochs: 100
+  num_epochs: 200
   save_interval: 5
 
   criterion:
