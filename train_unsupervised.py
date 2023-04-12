@@ -42,6 +42,7 @@ def main(args):
 
     model = get_model(model_cfg=args.model)
     scaler = torch.cuda.amp.GradScaler()
+    model = model.to(args.device)           # MUST move to cuda before load checkpoint
 
     criterion = get_criterion(criterion_cfg=args.train.criterion)
 
@@ -61,10 +62,16 @@ def main(args):
     # create log & ckpt
     args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name)
     args.ckpt_dir = os.path.join(args.ckpt_dir, args.name)
-    os.makedirs(args.log_dir, exist_ok=False)
-    print(f'creating folder {args.log_dir}')
-    os.makedirs(args.ckpt_dir, exist_ok=True)
-    print(f'creating folder {args.ckpt_dir}')
+    if os.path.exists(args.log_dir):
+      print(f'use folder {args.log_dir}')
+    else:
+      os.makedirs(args.log_dir, exist_ok=False)
+      print(f'creating folder {args.log_dir}')
+    if os.path.exists(args.ckpt_dir):
+      print(f'use folder {args.ckpt_dir}')
+    else:
+      os.makedirs(args.ckpt_dir, exist_ok=True)
+      print(f'creating folder {args.ckpt_dir}')
     shutil.copy2(args.config_file, args.log_dir)
 
     start_epoch = 0
@@ -74,7 +81,7 @@ def main(args):
     if args.resume.status:
         print("=> loading history at '{}'".format(args.resume.ckpt))
 
-        checkpoint = torch.load(args.resume.ckpt)
+        checkpoint = torch.load(args.resume.ckpt, map_location='cpu')
 
         start_epoch = checkpoint['epoch'] + 1
         model.load_state_dict(checkpoint['state_dict'])
@@ -88,7 +95,6 @@ def main(args):
     # Start training
     global_progress = tqdm(range(start_epoch, args.train.stop_epoch), initial=start_epoch, total=args.train.stop_epoch, desc='Training')
 
-    model = model.to(args.device)
     trainer = Trainer(train_loader=train_loader, model=model, scaler=scaler,
                     criterion=criterion, optimizer=optimizer, scheduler=scheduler, 
                     logger=logger, args=args)
