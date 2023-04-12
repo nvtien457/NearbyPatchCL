@@ -4,7 +4,7 @@ model:
   name: simsiam
   backbone: resnet50
   params:
-    dim: 2048
+    proj_dim: 2048
     pred_dim: 512
 
 dataset:
