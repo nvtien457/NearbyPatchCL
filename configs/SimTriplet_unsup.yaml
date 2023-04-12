@@ -1,4 +1,4 @@
-name: SimTriplet_CATCH_100
+name: NVT_Simtriplet_10_256
 
 model:
   name: simtriplet

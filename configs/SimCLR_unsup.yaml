@@ -1,4 +1,4 @@
-name: SimCLR_CATCH_100
+name: NVT_SimCLR_10_256
 
 model:
   name: simclr
