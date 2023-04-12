@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 
 from tools import accuracy
 
@@ -20,13 +21,13 @@ def simclr_train(inputs, labels, model, criterion, args):
         'loss': loss,
     }
 
-    output = torch.mm(p_i, p_j.T)
+    logit = torch.mm(F.normalize(p_i, dim=-1), F.normalize(p_j, dim=-1).T)
     target = torch.arange(0, batch_size, dtype=torch.long).to(args.device)
 
     for m in args.train.metrics:
         if m == 'acc@1':
-            result_dict[m] = accuracy(output, target, topk=(1,))[0]
+            result_dict[m] = accuracy(logit, target, topk=(1,))[0]
         elif m == 'acc@5':
-            result_dict[m] = accuracy(output, target, topk=(5,))[0]
+            result_dict[m] = accuracy(logit, target, topk=(5,))[0]
     
     return result_dict
