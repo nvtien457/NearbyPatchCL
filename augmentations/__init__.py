@@ -1,4 +1,4 @@
-from .moco_aug import MoCoTransform, TwoCropsTransform, GaussianBlur
+from .moco_aug import MoCoTransform, GaussianBlur
 from .simclr_aug import SimCLRTransform
 from .byol_aug import BYOLTransform
 
@@ -62,7 +62,7 @@ def get_aug(aug_cfg, train=True):
         # if train_classifier is None:
         #     raise Exception
             
-        augmentation = Transform_single(image_size, train=train_classifier)
+        augmentation = Transform_single(image_size=aug_cfg.params['image_size'], train=False)
 
     else:
         raise Exception

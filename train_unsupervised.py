@@ -11,7 +11,7 @@ from datasets import get_dataset
 from augmentations import get_aug
 from losses import get_criterion
 from optimizers import get_optimizer, get_scheduler
-from tools import get_args, Logger
+from tools import get_args, Logger, knn_monitor
 from trainer import Trainer
 
 def main(args):
@@ -59,7 +59,7 @@ def main(args):
     scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
 
     # create log & ckpt
-    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name + '_' + datetime.now().strftime('%m%d%H%M%S'))
+    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name)
     args.ckpt_dir = os.path.join(args.ckpt_dir, args.name)
     os.makedirs(args.log_dir, exist_ok=False)
     print(f'creating folder {args.log_dir}')
@@ -89,7 +89,7 @@ def main(args):
     global_progress = tqdm(range(start_epoch, args.train.stop_epoch), initial=start_epoch, total=args.train.stop_epoch, desc='Training')
 
     model = model.to(args.device)
-    trainer = Trainer(train_loader=train_loader, memory_loader=memory_loader, val_loader=val_loader, model=model, scaler=scaler,
+    trainer = Trainer(train_loader=train_loader, model=model, scaler=scaler,
                     criterion=criterion, optimizer=optimizer, scheduler=scheduler, 
                     logger=logger, args=args)
 
@@ -98,6 +98,13 @@ def main(args):
         # Training
         metrics = trainer.train(epoch)
         loss = metrics['loss_avg']
+        
+        if args.train.knn_monitor and (epoch + 1) % args.train.knn_interval == 0:
+            accuracy = knn_monitor(model.backbone, memory_loader, val_loader, args.device,
+                                k=min(args.train.knn_k, len(memory_loader.dataset)),
+                                hide_progress=args.hide_progress)
+            
+            metrics['knn_acc'] = accuracy
 
         # Display
         global_progress.set_postfix(metrics)
