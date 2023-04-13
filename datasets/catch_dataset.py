@@ -90,7 +90,7 @@ class CATCHDataset(torch.utils.data.Dataset):
             if self.transform:
                 origin_img = self.transform(origin_img)
                 nearby_img = self.transform(nearby_img)
-            return origin_img, nearby_img, 0
+            return (origin_img, nearby_img), 0
             
         else:
             # Only 1 image

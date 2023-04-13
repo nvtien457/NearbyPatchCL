@@ -88,7 +88,7 @@ def main(args):
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler.load_state_dict(checkpoint['scheduler'])
 
-        best_loss = logger.load_event(args.resume.event, checkpoint['epoch'])
+        best_loss = logger.load_event(args.resume.event, checkpoint['epoch'], len(train_loader))
 
         print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume, checkpoint['epoch'], scheduler.iter, best_loss))
 

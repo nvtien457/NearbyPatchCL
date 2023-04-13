@@ -43,7 +43,7 @@ class Logger(object):
             self.plotter.update(ordered_dict)
             self.plotter.save(os.path.join(self.log_dir, 'plotter.svg'))
 
-    def load_event(self, event:str, epoch:int):
+    def load_event(self, event:str, epoch:int, iters_per_epoch:int):
         '''
         Load history log
         Parameter:
@@ -65,7 +65,6 @@ class Logger(object):
           raise Exception('Epoch {} out of range [{}, {}]'.format(epoch, 0, self.data_dict['epoch'][-1]))
 
         for k, v in self.data_dict.items():
-          iters_per_epoch = len(v) // num_epochs
           self.data_dict[k] = v[:((epoch+1)*iters_per_epoch)]
 
         if self.plotter: 
@@ -82,6 +81,6 @@ class Logger(object):
               self.plotter.update({k: i})
           self.plotter.save(os.path.join(self.log_dir, 'plotter.svg'))
 
-        avg_loss = np.average(np.array(self.data_dict['loss']).reshape(-1, len(self.data_dict['loss']) // num_epochs), axis=1).tolist()
+        avg_loss = np.average(np.array(self.data_dict['loss']).reshape((epoch+1, iters_per_epoch)), axis=1).tolist()
 
         return min(avg_loss)
