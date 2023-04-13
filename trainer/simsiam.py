@@ -1,5 +1,6 @@
 from tools import accuracy
 import torch
+import torch.nn.functional as F
 
 def simsiam_train(inputs, labels, model, criterion, args):
     img_1 = inputs[0]
@@ -18,7 +19,7 @@ def simsiam_train(inputs, labels, model, criterion, args):
         'loss': loss
     }
     
-    output = torch.mm(p1, p2.T)
+    output = torch.mm(F.normalize(p1, dim=-1), F.normalize(p2, dim=-1).T)
     target = torch.arange(0, batch_size, dtype=torch.long).to(args.device)
 
     for m in args.train.metrics:

@@ -1,4 +1,9 @@
-!python main.py \
-    -c ./configs/SimCLR_unsup.yaml \
-    --ckpt_dir ../NVT_checkpoints \
-    --log_dir ../NVT_logs
+python train_unsupervised.py \
+    -c ./configs/SimSiam_unsup.yaml \
+    --ckpt_dir ../checkpoints \
+    --log_dir ../logs \
+    --data_dir ../CATCH \
+    --mem_dir ../CATCH/TRAIN_VAL_SET \
+    --val_dir ../CATCH/VAL_SET \
+    --hide_progress \
+    --debug --debug_subset_size 8

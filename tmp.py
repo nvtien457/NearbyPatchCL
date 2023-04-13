@@ -1,15 +1,12 @@
-from tools import accuracy
+from models import MoCo, get_backbone
 import torch
-import torch.nn.functional as F
 
-B = 8
-D = 4
+model = MoCo(backbone=get_backbone('resnet50')).cuda()
 
-a = torch.randn((B, D))
+x = torch.randn((4, 16, 3, 224, 224))
+y = torch.randn((4, 16, 3, 224, 224))
 
-logit = torch.mm(F.normalize(a, dim=-1), F.normalize(a, dim=-1).T)
-target = torch.arange(0, B, dtype=torch.long)
-
-acc1 = accuracy(logit, target, topk=(1,))
-
-print(acc1)
+for i in range(4):
+    xi = x[i].cuda()
+    yi = y[i].cuda()
+    logits, labels = model(xi, yi)

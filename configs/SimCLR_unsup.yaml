@@ -48,6 +48,8 @@ train:
       final_lr: 0.0001
       constant_predictor_lr: False
 
+eval: None
+
 seed: 47
 num_workers: 1
 tensorboard: True

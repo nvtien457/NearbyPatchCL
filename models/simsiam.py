@@ -35,7 +35,7 @@ class SimSiam(nn.Module):
         #                                 nn.BatchNorm1d(dim, affine=False)) # output layer
         # self.encoder.fc[6].bias.requires_grad = False # hack: not use bias as it is followed by BN
         self.backbone = backbone
-        in_dim = backbone.fc.in_features
+        in_dim = backbone.output_dim
         
         self.projector = nn.Sequential(
             nn.Linear(in_dim, proj_dim, bias=False),

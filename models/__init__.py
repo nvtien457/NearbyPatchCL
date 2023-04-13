@@ -18,13 +18,13 @@ def get_backbone(backbone, castrate=True):           #lq debug
 
 def get_model(model_cfg):
     if model_cfg.name == 'moco':
-        model = MoCo(base_encoder=models.__dict__[model_cfg.backbone], **model_cfg.params)
+        model = MoCo(get_backbone(model_cfg.backbone), **model_cfg.params)
     
     elif model_cfg.name == 'simclr':
-        model = SimCLR(encoder=get_backbone(model_cfg.backbone), **model_cfg.params)
+        model = SimCLR(get_backbone(model_cfg.backbone), **model_cfg.params)
 
     elif model_cfg.name == 'simsiam':
-        model = SimSiam(backbone=get_backbone(model_cfg.backbone), **model_cfg.params)
+        model = SimSiam(get_backbone(model_cfg.backbone), **model_cfg.params)
 
     elif model_cfg.name == 'simtriplet':
         model = SimTriplet(get_backbone(backbone=model_cfg.backbone))

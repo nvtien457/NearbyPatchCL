@@ -106,15 +106,9 @@ def main(args):
         loss = metrics['loss_avg']
         
         if args.train.knn_monitor and (epoch + 1) % args.train.knn_interval == 0:
-            if args.model.name== 'moco':
-                
-                accuracy = knn_monitor(model.encoder_q, memory_loader, val_loader, args.device,
-                                k=min(args.train.knn_k, len(memory_loader.dataset)),
-                                hide_progress=args.hide_progress)
-            else:
-                accuracy = knn_monitor(model.backbone, memory_loader, val_loader, args.device,
-                                k=min(args.train.knn_k, len(memory_loader.dataset)),
-                                hide_progress=args.hide_progress)
+            accuracy = knn_monitor(model.backbone, memory_loader, val_loader, args.device,
+                            k=min(args.train.knn_k, len(memory_loader.dataset)),
+                            hide_progress=args.hide_progress)
             
             metrics['knn_acc'] = accuracy
 

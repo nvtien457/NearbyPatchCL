@@ -84,9 +84,10 @@ def get_args():
 
     if args.debug:
         if args.train: 
-            args.train.batch_size
-            args.train.num_epochs = 1
-            args.train.stop_at_epoch = 1
+            args.train.batch_size = 2
+            args.train.num_epochs = 5
+            args.train.stop_epoch = 5
+            args.train.scheduler.params.warmup_epochs = 2
         if args.eval: 
             args.eval.batch_size = 2
             args.eval.num_epochs = 1 # train only one epoch

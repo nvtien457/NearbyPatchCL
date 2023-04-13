@@ -1,5 +1,5 @@
-# import torch
-# import torchvision
+import torch
+import torchvision
 
 from .catch_dataset import CATCHDataset
 
@@ -25,7 +25,7 @@ def get_dataset(dataset_cfg, transform=None, debug_subset_size=None):
 
     if debug_subset_size is not None:
         dataset = torch.utils.data.Subset(dataset, range(0, debug_subset_size)) # take only one batch
-        dataset.classes = dataset.dataset.classes
-        dataset.targets = dataset.dataset.targets
+        # dataset.classes = dataset.dataset.classes
+        # dataset.targets = dataset.dataset.targets
         
     return dataset

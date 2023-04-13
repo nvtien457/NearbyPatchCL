@@ -52,6 +52,8 @@ train:
   knn_k: 200
   save_interval: 5
 
+eval: None
+
 seed: None
 tensorboard: True
 matplotlib: True
