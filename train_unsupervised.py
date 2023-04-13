@@ -107,6 +107,7 @@ def main(args):
         
         if args.train.knn_monitor and (epoch + 1) % args.train.knn_interval == 0:
             if args.model.name== 'moco':
+                del  model.encoder_q.fc
                 accuracy = knn_monitor(model.encoder_q, memory_loader, val_loader, args.device,
                                 k=min(args.train.knn_k, len(memory_loader.dataset)),
                                 hide_progress=args.hide_progress)
