@@ -24,7 +24,7 @@ def get_model(model_cfg):
         model = SimCLR(encoder=get_backbone(model_cfg.backbone), **model_cfg.params)
 
     elif model_cfg.name == 'simsiam':
-        model = SimSiam(base_encoder=get_backbone(model_cfg.backbone), **model_cfg.params)
+        model = SimSiam(backbone=get_backbone(model_cfg.backbone), **model_cfg.params)
 
     elif model_cfg.name == 'simtriplet':
         model = SimTriplet(get_backbone(backbone=model_cfg.backbone))
