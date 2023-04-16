@@ -90,10 +90,10 @@ def main(args):
 
         best_loss = logger.load_event(args.resume.event, checkpoint['epoch'], len(train_loader))
 
-        print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume, checkpoint['epoch'], scheduler.iter, best_loss))
+        print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume.ckpt, checkpoint['epoch'], scheduler.iter, best_loss))
 
     # Start training
-    global_progress = tqdm(range(start_epoch, args.train.stop_epoch), initial=start_epoch, total=args.train.stop_epoch, desc='Training')
+    global_progress = tqdm(range(start_epoch, args.train.stop_epoch), initial=start_epoch, total=args.train.stop_epoch-1, desc='Training')
 
     trainer = Trainer(train_loader=train_loader, model=model, scaler=scaler,
                     criterion=criterion, optimizer=optimizer, scheduler=scheduler, 
@@ -105,16 +105,20 @@ def main(args):
         metrics = trainer.train(epoch)
         loss = metrics['loss_avg']
         
+        epoch_dict = dict()
         if args.train.knn_monitor and (epoch + 1) % args.train.knn_interval == 0:
             accuracy = knn_monitor(model.backbone, memory_loader, val_loader, args.device,
                             k=min(args.train.knn_k, len(memory_loader.dataset)),
                             hide_progress=args.hide_progress)
             
             metrics['knn_acc'] = accuracy
+            epoch_dict['knn_acc'] = accuracy
+
+        epoch_dict['epoch'] = epoch
 
         # Display
         global_progress.set_postfix(metrics)
-        logger.update_scalers({'epoch': epoch})
+        logger.update_scalers(epoch_dict)
 
         # Save the checkpoint
         filepath = os.path.join(args.ckpt_dir, 'ckpt_{:03d}.pth'.format(epoch))

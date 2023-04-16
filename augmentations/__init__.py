@@ -1,6 +1,7 @@
 from .moco_aug import MoCoTransform, GaussianBlur
 from .simclr_aug import SimCLRTransform
 from .byol_aug import BYOLTransform
+from .supcon_aug import SupConTransform
 
 import torchvision.transforms as T
 
@@ -53,6 +54,9 @@ def get_aug(aug_cfg, train=True):
 
         elif name == 'byol':
             augmentation = TwoCropsTransform(BYOLTransform(**aug_cfg.params))
+
+        elif name == 'supcon':
+            augmentation = TwoCropsTransform(SupConTransform(**aug_cfg.params))
 
         else:
             raise NotImplementedError
