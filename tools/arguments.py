@@ -146,6 +146,14 @@ def get_args():
             optimizer_params[k] = v
         vars(args.train.optimizer)['params'] = optimizer_params
 
+    if args.eval.optimizer.params == None:
+        vars(args.eval.optimizer)['params'] = dict()
+    else:
+        optimizer_params = dict()
+        for k, v in args.eval.optimizer.params.__dict__.items():
+            optimizer_params[k] = v
+        vars(args.eval.optimizer)['params'] = optimizer_params
+
 
     # scheduler.params
     if args.train.scheduler.params == None:
@@ -157,6 +165,16 @@ def get_args():
         scheduler_params['base_lr'] = optimizer_params['lr']
         scheduler_params['num_epochs'] = args.train.num_epochs
         vars(args.train.scheduler)['params'] = scheduler_params
+
+    if args.eval.scheduler.params == None:
+        vars(args.eval.scheduler)['params'] = dict()
+    else:
+        scheduler_params = dict()
+        for k, v in args.eval.scheduler.params.__dict__.items():
+            scheduler_params[k] = v
+        scheduler_params['base_lr'] = optimizer_params['lr']
+        scheduler_params['num_epochs'] = args.eval.num_epochs
+        vars(args.eval.scheduler)['params'] = scheduler_params
 
     # datset.params
     if args.dataset.params == None:

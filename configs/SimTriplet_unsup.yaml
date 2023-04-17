@@ -1,4 +1,4 @@
-name: Tien_Simtriplet_10_256
+name: Tien_SimTriplet_10_256
 
 model:
   name: simtriplet
@@ -48,7 +48,24 @@ train:
       warmup_lr: 0.01
       final_lr: 0.0005
 
-eval: None
+eval:
+  batch_size: 128
+  num_epochs: 30
+  fold: 5
+  eval_from: ../checkpoints/Tien_SimTriplet_10_256/ckpt_099.pth
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 30
+      momentum: 0.9
+      weight_decay: 0
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 5
+      warmup_lr: 0.1
+      final_lr: 0.0001
 
 seed: 47
 num_workers: 1
@@ -56,6 +73,6 @@ tensorboard: True
 matplotlib: True
 
 resume:
-  status: False
-  ckpt: None
-  event: None
+  status: True
+  ckpt: ../checkpoints/Tien_SimTriplet_10_256/ckpt_best_094.pth
+  event: ../logs/in-progress_Tien_SimTriplet_10_256_0416131948/events.out.tfevents.1681651188.selab3
