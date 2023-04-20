@@ -32,7 +32,7 @@ train:
   criterion:
     name: neg-cosine
     params: None
-  metrics: ['acc@1']
+  metrics: ['acc_1']
 
   optimizer:
     name: sgd
@@ -74,5 +74,5 @@ matplotlib: True
 
 resume:
   status: True
-  ckpt: ../checkpoints/Tien_SimTriplet_10_256/ckpt_best_094.pth
-  event: ../logs/in-progress_Tien_SimTriplet_10_256_0416131948/events.out.tfevents.1681651188.selab3
+  ckpt: ../checkpoints/Tien_SimTriplet_10_256/ckpt_104.pth
+  event: ../logs/in-progress_Tien_SimTriplet_10_256_0418064000/events.out.tfevents.1681800000.selab3

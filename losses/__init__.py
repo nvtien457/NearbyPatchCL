@@ -2,6 +2,7 @@ import torch.nn as nn
 
 from .NT_Xent import NT_Xent
 from .neg_cosine import Negative_CosineSimilarity
+from .supcon import SupConLoss
 
 def get_criterion(criterion_cfg):
     if criterion_cfg.name == 'CE':
@@ -18,6 +19,9 @@ def get_criterion(criterion_cfg):
 
     elif criterion_cfg.name == 'neg-cosine':
         return Negative_CosineSimilarity
+
+    elif criterion_cfg.name == 'supcon':
+        return SupConLoss(**criterion_cfg.params)
 
     else:
         raise NotImplementedError

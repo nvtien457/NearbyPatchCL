@@ -34,7 +34,7 @@ train:
   criterion:
     name: CE
     params: None
-  metrics: ['acc@1']
+  metrics: ['acc_1']
 
   optimizer:
     name: sgd

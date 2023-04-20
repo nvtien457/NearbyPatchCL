@@ -1,12 +1,29 @@
-from models import MoCo, get_backbone
 import torch
+import time
+from losses import SupConLoss, NT_Xent, SCLoss
 
-model = MoCo(backbone=get_backbone('resnet50')).cuda()
+B = 2
+D = 3
 
-x = torch.randn((4, 16, 3, 224, 224))
-y = torch.randn((4, 16, 3, 224, 224))
+criterion = SCLoss(temperature=0.07)
+ntx = NT_Xent(temperature=0.07)
 
-for i in range(4):
-    xi = x[i].cuda()
-    yi = y[i].cuda()
-    logits, labels = model(xi, yi)
+a1 = torch.randn((B, D))
+a2 = torch.randn((B, D))
+an = torch.randn((B, D))
+
+loss = criterion(a1, a2, an)
+print(loss)
+
+loss = ntx(a1, a2) + ntx(a1, an) + ntx(a2, an)
+print(loss)
+
+# logits = torch.mm(torch.cat((a1, a2), dim=0), torch.cat((a1, a2, an), dim=0).T)
+
+# print(logits.shape)
+# print(logits)
+
+# print(torch.diag(logits, diagonal=0))
+# print(torch.diag(logits, diagonal=B))
+# print(torch.diag(logits, diagonal=2*B))
+# print(torch.diag(logits, diagonal=-B))

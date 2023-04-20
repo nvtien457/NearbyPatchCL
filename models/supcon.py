@@ -1,10 +1,10 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-class SupConResNet(nn.Module):
+class SupCon(nn.Module):
     """backbone + projection head"""
     def __init__(self, backbone, head='mlp', feat_dim=128):
-        super(SupConResNet, self).__init__()
+        super(SupCon, self).__init__()
         self.backbone = backbone
         in_dim = backbone.output_dim
 

@@ -11,19 +11,19 @@ dataset:
   name: CATCH
   params:
     name: 10
+    use_nearby: True
+    patch_id: 0
 
 aug:
-  name: moco
+  name: supcon
   params:
     image_size: 128
-    version: v2
 
 train:
   batch_size: 128
   iters_to_accumulate: 2
   stop_epoch: 200
-  num_epochs: 200
-  nodes: 1
+  num_epochs: 250
   save_interval: 5
   knn_monitor: True
   knn_interval: 5
@@ -33,27 +33,26 @@ train:
     name: supcon
     params:
       temperature: 0.07
-      contrast_mode: all
-      base_temperature: 0.07
-  metrics: ['acc@1']
+  metrics: ['acc_1']
 
   optimizer:
     name: sgd
     params:
       lr: 0.05
-      momentum: 0
+      momentum: 0.9
       weight_decay: 0.0001
       
   scheduler:
     name: lr_scheduler
     params:
-      warmup_epochs: 30
+      warmup_epochs: 10
       warmup_lr: 0.01
-      final_lr: 0.0005
+      final_lr: 0.0001
+      constant_predictor_lr: False
 
 eval: None
 
-seed: 47
+seed: 31
 num_workers: 1
 tensorboard: True
 matplotlib: True

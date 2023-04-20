@@ -16,9 +16,9 @@ def moco_train(inputs, labels, model, criterion, args):
     }
 
     for m in args.train.metrics:
-        if m == 'acc@1':
+        if m == 'acc_1':
             result_dict[m] = accuracy(output, target, topk=(1,))[0]
-        elif m == 'acc@5':
+        elif m == 'acc_5':
             result_dict[m] = accuracy(output, target, topk=(5,))[0]
 
     return result_dict

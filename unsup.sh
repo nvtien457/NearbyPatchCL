@@ -1,5 +1,5 @@
 python train_unsupervised.py \
-    -c ./configs/SimTriplet_unsup.yaml \
+    -c ./configs/SupCon.yaml \
     --ckpt_dir ../checkpoints \
     --log_dir ../logs \
     --data_dir ../CATCH \

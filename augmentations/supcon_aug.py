@@ -18,7 +18,7 @@ class SupConTransform:
             std = eval(opt.std)
         else:
             raise ValueError('dataset not supported: {}'.format(dataset))
-        normalize = transforms.Normalize(mean=mean, std=std)
+        normalize = T.Normalize(mean=mean, std=std)
 
         self.transform = T.Compose(
             [
