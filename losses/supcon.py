@@ -127,13 +127,13 @@ class SupConLoss(nn.Module):
             torch.diag(sim, batch_size),
             torch.diag(sim, -batch_size),
             torch.diag(sim, 2*batch_size)
-        ), dim=0).reshape(2*batch_size, 2)                      # ( 2B x 2 )
+        ), dim=0).reshape(2*batch_size, -1)                      # ( 2B x 2 )
         negative_samples = sim[mask].reshape(2*batch_size, -1)  # ( 2B x (3B-3) )
 
         sum_neg = torch.sum(negative_samples, dim=1, keepdim=True)  # (2Bx1)
-        prob = torch.div(positive_samples, sum_neg)                 # (2Bx2)
-        log_prob = -torch.log(prob)                                 # (2Bx2)
-        mean_log_prob_pos = torch.mean(log_prob, dim=1)             # (2B)
+        prob = torch.div(positive_samples, sum_neg)                 # (2Bx4)
+        log_prob = -torch.log(prob)                                 # (2Bx4)
+        mean_log_prob_pos = torch.mean(log_prob, dim=1)             # (B)
         loss = torch.sum(mean_log_prob_pos)                       
 
         loss /= batch_size

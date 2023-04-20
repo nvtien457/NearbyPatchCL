@@ -13,9 +13,10 @@ from .plotter import Plotter
 
 
 class Logger(object):
-    def __init__(self, log_dir, tensorboard=True, matplotlib=True):
+    def __init__(self, log_dir, tensorboard=True, matplotlib=True, file='plotter.svg'):
 
         self.reset(log_dir, tensorboard, matplotlib)
+        self.file = file
 
     def reset(self, log_dir=None, tensorboard=True, matplotlib=True):
 
@@ -41,7 +42,7 @@ class Logger(object):
 
         if self.plotter: 
             self.plotter.update(ordered_dict)
-            self.plotter.save(os.path.join(self.log_dir, 'plotter.svg'))
+            self.plotter.save(os.path.join(self.log_dir, self.file))
 
     def load_event(self, event:str, epoch:int, iters_per_epoch:int):
         '''

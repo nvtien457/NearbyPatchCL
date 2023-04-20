@@ -49,10 +49,10 @@ train:
       final_lr: 0.0005
 
 eval:
-  batch_size: 128
+  batch_size: 256
   num_epochs: 30
   fold: 5
-  eval_from: ../checkpoints/Tien_SimTriplet_10_256/ckpt_099.pth
+  eval_from: ../checkpoints/Tien_SimTriplet_10_256/ckpt_149.pth
 
   optimizer:
     name: sgd

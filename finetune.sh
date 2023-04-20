@@ -1,5 +1,5 @@
 python train_linear.py \
-    -c ./configs/MoCo_unsup.yaml \
+    -c ./configs/SimCLR_unsup.yaml \
     --ckpt_dir ../checkpoints \
     --log_dir ../logs \
     --data_dir ../CATCH \

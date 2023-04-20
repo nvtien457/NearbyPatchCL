@@ -1,4 +1,4 @@
-name: Tien_SupCon_10_256
+name: NVT_SupCon_10_256
 
 model:
   name: supcon
@@ -50,7 +50,24 @@ train:
       final_lr: 0.0001
       constant_predictor_lr: False
 
-eval: None
+eval:
+  batch_size: 256
+  num_epochs: 30
+  fold: 5
+  eval_from: ../checkpoints/NVT_SupCon_10_256/ckpt_best_025.pth
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 0.1
+      momentum: 0.9
+      weight_decay: 0
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 5
+      warmup_lr: 0.01
+      final_lr: 0.0001
 
 seed: 31
 num_workers: 1

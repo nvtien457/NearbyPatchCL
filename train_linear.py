@@ -1,5 +1,5 @@
 from datasets.folder_dataset import ImageFolder
-from tools import get_args, AverageMeter
+from tools import get_args, AverageMeter, Logger
 from augmentations import get_aug
 from models import get_model, get_backbone
 from datasets import get_dataset
@@ -26,8 +26,9 @@ import pathlib
 
 def main(args):
     # create log & ckpt
-    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name + '_finetune')
-    args.ckpt_dir = os.path.join(args.ckpt_dir, args.name + '/finetune')
+    dt = '_' + datetime.now().strftime('%m%d%H%M%S')
+    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name + '_finetune' + dt)
+    args.ckpt_dir = os.path.join(args.ckpt_dir, args.name + '/finetune' + dt)
     if os.path.exists(args.log_dir):
       print(f'use folder {args.log_dir}')
     else:
@@ -73,33 +74,17 @@ def main(args):
         num_classes = len(dataset.classes)
 
         backbone = get_backbone(args.model.backbone)
-        classifier = nn.Linear(in_features=backbone.output_dim, out_features=num_classes, bias=True).to(args.device)
 
         assert args.eval.eval_from is not None
         save_dict = torch.load(args.eval.eval_from, map_location='cpu')
         msg = backbone.load_state_dict({k[9:]: v for k, v in save_dict['state_dict'].items() if k.startswith('backbone.')},
                                     strict=True)
 
-        # print(msg)
+        # # print(msg)
         model = backbone.to(args.device)
-        # model = torch.nn.DataParallel(model)
+        model.eval()
 
-        # classifier = torch.nn.DataParallel(classifier)
-        # define optimizer
-        # optimizer = get_optimizer(
-        #     args.eval.optimizer.name, classifier,
-        #     lr=args.eval.base_lr * args.eval.batch_size / 256,
-        #     momentum=args.eval.optimizer.momentum,
-        #     weight_decay=args.eval.optimizer.weight_decay)
-
-        # define lr scheduler
-        # lr_scheduler = LR_Scheduler(
-        #     optimizer,
-        #     args.eval.warmup_epochs, args.eval.warmup_lr * args.eval.batch_size / 256,
-        #     args.eval.num_epochs, args.eval.base_lr * args.eval.batch_size / 256,
-        #                              args.eval.final_lr * args.eval.batch_size / 256,
-        #     len(train_loader),
-        # )
+        classifier = nn.Linear(in_features=backbone.output_dim, out_features=num_classes, bias=True).to(args.device)
 
         # Use Mixed Precision Training
         args.eval.optimizer.params['lr']        = args.eval.optimizer.params['lr']        * args.eval.batch_size / 256
@@ -111,18 +96,20 @@ def main(args):
         iter_per_epoch = len(train_loader)
         args.eval.scheduler.params['iter_per_epoch'] = iter_per_epoch
 
-        optimizer = get_optimizer(optimizer_cfg=args.eval.optimizer, model=model)
+        optimizer = get_optimizer(optimizer_cfg=args.eval.optimizer, model=classifier)
         scheduler = get_scheduler(scheduler_cfg=args.eval.scheduler, optimizer=optimizer)
 
         loss_meter = AverageMeter(name='Loss')
         acc_meter = AverageMeter(name='Accuracy')
+
+        logger = Logger(log_dir=args.log_dir, tensorboard=args.tensorboard, matplotlib=args.matplotlib, file=f'plotter_fold{fold}.svg')
 
         # Start training
         best_ckpt_path = f'{args.ckpt_dir}/fold_{fold}.pth'
         global_progress = tqdm(range(0, args.eval.num_epochs), desc=f'Evaluating')
         for epoch in global_progress:
             loss_meter.reset()
-            model.eval()
+            acc_meter.reset()
             classifier.train()
             local_progress = tqdm(train_loader, desc=f'Epoch {epoch}/{args.eval.num_epochs}')
 
@@ -137,9 +124,24 @@ def main(args):
 
                 loss.backward()
                 optimizer.step()
-                loss_meter.update(loss.item())
                 lr = scheduler.step()
-                local_progress.set_postfix({'lr': lr, "train_loss": loss_meter.val, 'train_loss_avg': loss_meter.avg})
+
+                with torch.no_grad():
+                    preds = preds.argmax(dim=1)
+                    correct = (preds == labels.to(args.device)).sum().item()
+                    acc_meter.update(correct / preds.shape[0], n=preds.shape[0])
+
+                loss_meter.update(loss.item(), n=preds.shape[0])
+                logger.update_scalers({
+                    'loss': loss_meter.val,
+                    'lr': lr
+                })
+                local_progress.set_postfix({'lr': lr, "train_loss": loss_meter.val, 'train_loss_avg': loss_meter.avg, 'train_acc': acc_meter.avg * 100})
+
+            logger.update_scalers({
+                'train_loss': loss_meter.avg,
+                'train_acc': acc_meter.avg * 100,
+            }
 
             writer.add_scalar('Valid/Loss', loss_meter.avg, epoch)
             writer.add_scalar('Valid/Lr', lr, epoch)
@@ -156,6 +158,7 @@ def main(args):
 
             classifier.eval()
             correct, total = 0, 0
+            loss_meter.reset()
             acc_meter.reset()
 
             pred_label_for_f1 = np.array([])
@@ -163,19 +166,28 @@ def main(args):
             for idx, (images, labels) in enumerate(test_loader):
                 with torch.no_grad():
                     feature = model(images.to(args.device))
-                    preds = classifier(feature).argmax(dim=1)
+                    preds = classifier(feature)
+                    loss = F.cross_entropy(preds, labels.to(args.device))
+                    loss_meter.update(loss.item(), n=preds.shape[0])
+                    preds = preds.argmax(dim=1)
                     correct = (preds == labels.to(args.device)).sum().item()
 
                     preds_arr = preds.cpu().detach().numpy()
                     labels_arr = labels.cpu().detach().numpy()
                     pred_label_for_f1 = np.concatenate([pred_label_for_f1, preds_arr])
                     true_label_for_f1 = np.concatenate([true_label_for_f1, labels_arr])
-                    acc_meter.update(correct / preds.shape[0])
+                    acc_meter.update(correct / preds.shape[0], n=preds.shape[0])
 
             f1 = f1_score(true_label_for_f1, pred_label_for_f1, average='macro')
             balance_acc = balanced_accuracy_score(true_label_for_f1, pred_label_for_f1)
             global_progress.set_postfix({'Epoch': epoch, 'Accuracy': acc_meter.avg * 100, 'F1-score': f1, 'Balanced_accuracy': balance_acc})
-            
+            logger.update_scalers({
+                'val_loss': loss_meter.avg,
+                'val_acc': acc_meter.avg * 100,
+                'f1': f1,
+                'balanced_acc': balance_acc * 100
+            })
+
             if balance_acc > best_balance_acc:
                 best_epoch[fold] = epoch
                 best_balance_acc = balance_acc
