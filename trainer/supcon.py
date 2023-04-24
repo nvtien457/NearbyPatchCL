@@ -24,7 +24,7 @@ def supcon_train(inputs, labels, model, criterion, args):
         'loss': loss
     }
 
-    logit = torch.mm(F.normalize(p1, dim=-1), F.normalize(p2, dim=-1).T)
+    logit = torch.mm(p1, p2.T)
     target = torch.arange(0, batch_size, dtype=torch.long).to(args.device)
 
     for m in args.train.metrics:

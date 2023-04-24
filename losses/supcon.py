@@ -97,19 +97,21 @@ import torch.nn as nn
 
 
 class SupConLoss(nn.Module):
-    def __init__(self, temperature=0.07):
+    def __init__(self, temperature=0.07, eps=1e-6):
         super(SupConLoss, self).__init__()
         self.temperature = temperature
         self.similarity_f = nn.CosineSimilarity(dim=2)
+        self.eps = eps
 
     def mask_correlated_samples(self, batch_size):
         mask = torch.ones((2*batch_size, 3*batch_size), dtype=bool)
         mask = mask.fill_diagonal_(0)
         for i in range(batch_size):
             mask[i, batch_size+i] = 0
-            mask[batch_size+i, 2*batch_size+i] = 0
-            mask[i, 2*batch_size+i] = 0
+            # mask[batch_size+i, 2*batch_size+i] = 0
+            # mask[i, 2*batch_size+i] = 0
             mask[batch_size+i, i] = 0
+        mask[:,2*batch_size:] = 0
         return mask
 
     def forward(self, z1, z2, zn):
@@ -117,24 +119,39 @@ class SupConLoss(nn.Module):
 
         mask = self.mask_correlated_samples(batch_size)    # only negative sample (different samples in batch)
         # (2B x 3B)
+        # print(mask)
 
         z = torch.cat((z1, z2), dim=0)        # (2B x D)
         f = torch.cat((z1,z2, zn), dim=0)     # (3B x D)
 
-        sim = torch.exp(self.similarity_f(z.unsqueeze(1), f.unsqueeze(0)) / self.temperature)  # cosine similarity matrix (2B x 3B)
+        sim = self.similarity_f(z.unsqueeze(1), f.unsqueeze(0))
+        # print('sim:', torch.min(sim), torch.max(sim))
+        logit = torch.exp(torch.div(sim, self.temperature))  # (2B x 3B)
+        # print('logit:', torch.min(logit), torch.max(logit))
+        # logit_max, _ = torch.max(logit, dim=1, keepdim=True)
+        # logit_min, _ = torch.min(logit, dim=1, keepdim=True)
+        # logit = (logit) / (logit_max.detach() - logit_min.detach())
+        # print('logit (after):', torch.min(logit), torch.max(logit))
 
         positive_samples = torch.cat((
-            torch.diag(sim, batch_size),
-            torch.diag(sim, -batch_size),
-            torch.diag(sim, 2*batch_size)
+            torch.diag(logit, batch_size),
+            torch.diag(logit, -batch_size),
+            torch.diag(logit, 2*batch_size)
         ), dim=0).reshape(2*batch_size, -1)                      # ( 2B x 2 )
-        negative_samples = sim[mask].reshape(2*batch_size, -1)  # ( 2B x (3B-3) )
+        negative_samples = logit[mask].reshape(2*batch_size, -1)  # ( 2B x (2B-2) )
+
+        # print(positive_samples.shape, negative_samples.shape)
 
         sum_neg = torch.sum(negative_samples, dim=1, keepdim=True)  # (2Bx1)
-        prob = torch.div(positive_samples, sum_neg)                 # (2Bx4)
+        # print('sum_neg:', torch.min(sum_neg), torch.max(sum_neg))
+        prob = torch.div(positive_samples, sum_neg + self.eps)                 # (2Bx2)
+        # print('pos:', torch.min(positive_samples), torch.max(positive_samples))
+        # print('prob:', torch.min(prob), torch.max(prob))
         log_prob = -torch.log(prob)                                 # (2Bx4)
-        mean_log_prob_pos = torch.mean(log_prob, dim=1)             # (B)
-        loss = torch.sum(mean_log_prob_pos)                       
+        # print('log_prob:', torch.min(log_prob), torch.max(log_prob))
+        mean_log_prob = torch.mean(log_prob, dim=1)             # (B)
+        # print('mean_log_prob:', torch.min(mean_log_prob), torch.max(mean_log_prob))
+        loss = torch.sum(mean_log_prob)                       
 
         loss /= batch_size
 

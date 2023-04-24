@@ -141,7 +141,7 @@ def main(args):
             logger.update_scalers({
                 'train_loss': loss_meter.avg,
                 'train_acc': acc_meter.avg * 100,
-            }
+            })
 
             writer.add_scalar('Valid/Loss', loss_meter.avg, epoch)
             writer.add_scalar('Valid/Lr', lr, epoch)

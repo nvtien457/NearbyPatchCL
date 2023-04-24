@@ -82,13 +82,14 @@ def main(args):
         print("=> loading history at '{}'".format(args.resume.ckpt))
 
         checkpoint = torch.load(args.resume.ckpt, map_location='cpu')
+        model.load_state_dict(checkpoint['state_dict'])
 
         start_epoch = checkpoint['epoch'] + 1
-        model.load_state_dict(checkpoint['state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler.load_state_dict(checkpoint['scheduler'])
 
-        best_loss = logger.load_event(args.resume.event, checkpoint['epoch'], len(train_loader))
+        if args.resume.event is not None:
+            best_loss = logger.load_event(args.resume.event, checkpoint['epoch'], len(train_loader))
 
         print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume.ckpt, checkpoint['epoch'], scheduler.iter, best_loss))
 
@@ -103,6 +104,7 @@ def main(args):
 
         # Training
         metrics = trainer.train(epoch)
+        # break
         loss = metrics['loss_avg']
         
         epoch_dict = dict()

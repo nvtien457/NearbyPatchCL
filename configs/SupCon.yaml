@@ -1,4 +1,4 @@
-name: NVT_SupCon_10_256
+name: MaskTien_SupCon_10_256
 
 model:
   name: supcon
@@ -52,9 +52,9 @@ train:
 
 eval:
   batch_size: 256
-  num_epochs: 30
+  num_epochs: 50
   fold: 5
-  eval_from: ../checkpoints/NVT_SupCon_10_256/ckpt_best_025.pth
+  eval_from: ../checkpoints/Tien_SupCon_10_256/ckpt_best_099.pth
 
   optimizer:
     name: sgd
@@ -65,7 +65,7 @@ eval:
   scheduler:
     name: lr_scheduler
     params:
-      warmup_epochs: 5
+      warmup_epochs: 10
       warmup_lr: 0.01
       final_lr: 0.0001
 
@@ -74,7 +74,8 @@ num_workers: 1
 tensorboard: True
 matplotlib: True
 
+
 resume:
-  status: False
-  ckpt: None
-  event: None
+  status: True
+  ckpt: ../checkpoints/MaskTien_SupCon_10_256/ckpt_best_016.pth
+  event: ../logs/in-progress_MaskTien_SupCon_10_256_0423120737/events.out.tfevents.1682251657.selab3

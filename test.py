@@ -18,7 +18,7 @@ from sklearn.metrics import confusion_matrix, f1_score, balanced_accuracy_score
 from torchvision.models import resnet50, resnet18
 
 FOLDER_NAME = '../checkpoints/Tien_SimCLR_10_256'
-FINETUNE_NAME = 'finetune'
+FINETUNE_NAME = 'finetune_100'
 MODEL = f"{FOLDER_NAME}/ckpt_best_099.pth"
 CLASSI0 = f"{FOLDER_NAME}/{FINETUNE_NAME}/fold_0.pth"
 CLASSI1 = f"{FOLDER_NAME}/{FINETUNE_NAME}/fold_1.pth"

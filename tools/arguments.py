@@ -84,7 +84,7 @@ def get_args():
 
     if args.debug:
         if args.train: 
-            args.train.batch_size = 2
+            args.train.batch_size = 3
             args.train.num_epochs = 5
             args.train.stop_epoch = 5
             args.train.scheduler.params.warmup_epochs = 2

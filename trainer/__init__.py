@@ -56,6 +56,9 @@ class Trainer:
         # swith to train mode
         self.model.train()
 
+        for k, meter in self.metric_meter.items():
+            self.metric_meter[k].reset()
+
         progress = tqdm(self.train_loader, desc=f'Epoch {epoch}/{self.args.train.num_epochs}', disable=self.args.hide_progress)
         for batch_idx, (inputs, targets) in enumerate(progress):
             batch_size = targets.shape[0]
@@ -64,6 +67,8 @@ class Trainer:
             with torch.autocast(device_type=self.args.device, dtype=torch.float16):
                 data_dict = self.train_func(inputs, targets, self.model, self.criterion, self.args)
                 loss = data_dict['loss'] / self.args.train.iters_to_accumulate
+                # print(loss)
+                # break
 
             self.scaler.scale(loss).backward()
 
