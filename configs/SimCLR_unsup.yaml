@@ -52,7 +52,7 @@ eval:
   batch_size: 256
   num_epochs: 50
   fold: 5
-  eval_from: ../checkpoints/Tien_SimCLR_10_256/ckpt_best_099.pth
+  eval_from: ../checkpoints/Tien_SimCLR_20_512/ckpt_099.pth
 
   optimizer:
     name: sgd
@@ -74,5 +74,5 @@ matplotlib: True
 
 resume:
   status: True
-  ckpt: ../checkpoints/Tien_SimCLR_20_512/ckpt_best_031.pth
-  event: ../logs/in-progress_Tien_SimCLR_20_512_0422175340/events.out.tfevents.1682186020.selab3
+  ckpt: ../checkpoints/Tien_SimCLR_20_512/ckpt_079.pth
+  event: ../logs/in-progress_Tien_SimCLR_20_512_0424163358/events.out.tfevents.1682354038.selab3

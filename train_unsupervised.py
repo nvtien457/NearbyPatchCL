@@ -84,17 +84,17 @@ def main(args):
         checkpoint = torch.load(args.resume.ckpt, map_location='cpu')
         model.load_state_dict(checkpoint['state_dict'])
 
-        start_epoch = checkpoint['epoch'] + 1
-        optimizer.load_state_dict(checkpoint['optimizer'])
-        scheduler.load_state_dict(checkpoint['scheduler'])
+        # start_epoch = checkpoint['epoch'] + 1
+        # optimizer.load_state_dict(checkpoint['optimizer'])
+        # scheduler.load_state_dict(checkpoint['scheduler'])
 
-        if args.resume.event is not None:
-            best_loss = logger.load_event(args.resume.event, checkpoint['epoch'], len(train_loader))
+        # if args.resume.event is not None:
+        #     best_loss = logger.load_event(args.resume.event, checkpoint['epoch'], len(train_loader))
 
-        print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume.ckpt, checkpoint['epoch'], scheduler.iter, best_loss))
+        # print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume.ckpt, checkpoint['epoch'], scheduler.iter, best_loss))
 
     # Start training
-    global_progress = tqdm(range(start_epoch, args.train.stop_epoch), initial=start_epoch, total=args.train.stop_epoch-1, desc='Training')
+    global_progress = tqdm(range(start_epoch, args.train.stop_epoch), initial=start_epoch, total=args.train.num_epochs-1, desc='Training')
 
     trainer = Trainer(train_loader=train_loader, model=model, scaler=scaler,
                     criterion=criterion, optimizer=optimizer, scheduler=scheduler, 

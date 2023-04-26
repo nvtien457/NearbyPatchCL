@@ -1,4 +1,4 @@
-name: MaskTien_SupCon_10_256
+name: Tien_SupCon_20_512
 
 model:
   name: supcon
@@ -10,7 +10,7 @@ model:
 dataset:
   name: CATCH
   params:
-    name: 10
+    name: 20
     use_nearby: True
     patch_id: 0
 
@@ -21,7 +21,7 @@ aug:
 
 train:
   batch_size: 128
-  iters_to_accumulate: 2
+  iters_to_accumulate: 4
   stop_epoch: 200
   num_epochs: 250
   save_interval: 5
@@ -54,7 +54,7 @@ eval:
   batch_size: 256
   num_epochs: 50
   fold: 5
-  eval_from: ../checkpoints/Tien_SupCon_10_256/ckpt_best_099.pth
+  eval_from: ../checkpoints/MaskTien_SupCon_10_256/ckpt_best_099.pth
 
   optimizer:
     name: sgd
@@ -77,5 +77,5 @@ matplotlib: True
 
 resume:
   status: True
-  ckpt: ../checkpoints/MaskTien_SupCon_10_256/ckpt_best_016.pth
-  event: ../logs/in-progress_MaskTien_SupCon_10_256_0423120737/events.out.tfevents.1682251657.selab3
+  ckpt: ../checkpoints/MaskTien_SupCon_10_256/ckpt_best_099.pth
+  event: None
