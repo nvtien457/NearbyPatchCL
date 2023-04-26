@@ -174,6 +174,8 @@ print('Training complete in {:.0f}m {:.0f}s'.format(
 balance_acc = balanced_accuracy_score(true, pred)
 print('Best balance Acc: {:4f}'.format(balance_acc))
 
+plt.savefig(cm, f'{FOLDER_NAME}/cm.jpg')
+
 '''
 Sample run: python train.py --mode=finetue
 '''
