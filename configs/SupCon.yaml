@@ -1,4 +1,4 @@
-name: Tien_SupCon_20_512
+name: Tien_SupCon_10_256
 
 model:
   name: supcon
@@ -51,10 +51,12 @@ train:
       constant_predictor_lr: False
 
 eval:
-  batch_size: 256
-  num_epochs: 50
+  batch_size: 128
+  num_epochs: 30
   fold: 5
-  eval_from: ../checkpoints/MaskTien_SupCon_10_256/ckpt_best_099.pth
+  eval_from: ../checkpoints/Tien_SupCon_10_256/ckpt_best_099.pth
+  name: e100_p10
+  dataset: 10
 
   optimizer:
     name: sgd
@@ -69,7 +71,7 @@ eval:
       warmup_lr: 0.01
       final_lr: 0.0001
 
-seed: 31
+seed: 17
 num_workers: 1
 tensorboard: True
 matplotlib: True

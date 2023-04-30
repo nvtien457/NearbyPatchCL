@@ -1,8 +1,10 @@
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
+from datasets import ImageFolder
 import torch
 import torchvision
-from torchvision import datasets, models, transforms
+from torchvision import models, transforms
 import torch.utils.data as data
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
@@ -14,23 +16,21 @@ import multiprocessing
 from matplotlib import pyplot as plt
 # from model import *
 from sklearn import preprocessing
-from sklearn.metrics import confusion_matrix, f1_score, balanced_accuracy_score
+from sklearn.metrics import confusion_matrix, f1_score, balanced_accuracy_score, ConfusionMatrixDisplay
 from torchvision.models import resnet50, resnet18
 
-FOLDER_NAME = '../checkpoints/Tien_SimCLR_20_512'
-FINETUNE_NAME = 'finetune_300'
-MODEL = f"{FOLDER_NAME}/ckpt_099.pth"
-CLASSI0 = f"{FOLDER_NAME}/{FINETUNE_NAME}/fold_0.pth"
-CLASSI1 = f"{FOLDER_NAME}/{FINETUNE_NAME}/fold_1.pth"
-CLASSI2 = f"{FOLDER_NAME}/{FINETUNE_NAME}/fold_2.pth"
-CLASSI3 = f"{FOLDER_NAME}/{FINETUNE_NAME}/fold_3.pth"
-CLASSI4 = f"{FOLDER_NAME}/{FINETUNE_NAME}/fold_4.pth"
+FOLDER_NAME = 'Tien_SupCon_10_256'
+FINETUNE_NAME = 'finetune_e100_p100'
+MODEL   = f"../checkpoints/{FOLDER_NAME}/ckpt_best_099.pth"
+CLASSI0 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_0.pth"
+CLASSI1 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_1.pth"
+CLASSI2 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_2.pth"
+CLASSI3 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_3.pth"
+CLASSI4 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_4.pth"
 
 def softmax(x):
     e = np.exp(x)
     return e / np.sum(e)
-
-valid_directory = '../CATCH/TEST_SET'
 
 # Applying transforms to the data
 image_transforms = {
@@ -51,37 +51,17 @@ image_transforms = {
 }
 
 
-valid_dataset = datasets.ImageFolder(root=valid_directory, transform=image_transforms['valid'])
 
 
 # Batch size
 bs = 128
-# Number of classes
-num_classes = len(valid_dataset.classes)
 # Number of workers
 # num_cpu = multiprocessing.cpu_count()
 num_cpu = 1
 # num_cpu = 0
 
-# Load data from folders
-dataset = {
-    'valid': data.ConcatDataset([valid_dataset])
-}
-
-# Size of train and validation data
-dataset_sizes = {
-    'valid': len(dataset['valid'])
-}
-
-# Create iterators for data loading
-dataloaders = {
-    'valid': data.DataLoader(dataset['valid'], batch_size=bs, shuffle=True,
-                             num_workers=num_cpu, pin_memory=True, drop_last=True)
-}
-
 # Print the train and validation data sizes
 print(MODEL)
-print("Validation-set size:", dataset_sizes['valid'])
 
 # Set default device as gpu, if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -119,63 +99,98 @@ classifier4 = torch.load(CLASSI4)
 classifier4.eval()
 classifier4 = classifier4.to(device)
 
-since = time.time()
-best_acc = 0.0
 
-model.eval()  # Set model to evaluate mode
-running_corrects = 0
+results = {
+    'subset': [],
+    'f1': [],
+    'balanced_acc': []
+}
+for subset in os.listdir('../CATCH/FINETUNE/TEST_SET'):
+    directory = os.path.join('../CATCH/FINETUNE/TEST_SET', subset)
+    dataset = ImageFolder(root=directory, transform=image_transforms['valid'])
 
-pred = []
-true = []
-for inputs, labels in tqdm(dataloaders['valid']):
-    inputs = inputs.to(device, non_blocking=True)
-    labels = labels.to(device, non_blocking=True)
+    print(f'++ {subset}:')
 
-    # forward
-    # outputs = model(inputs)
-    # _, preds = torch.max(outputs, 1)
-    preds = np.zeros(bs)
-    feature = model(inputs)
-    out_prob0 = np.array(classifier0(feature).detach().cpu())
-    out_prob1 = np.array(classifier1(feature).detach().cpu())
-    out_prob2 = np.array(classifier2(feature).detach().cpu())
-    out_prob3 = np.array(classifier3(feature).detach().cpu())
-    out_prob4 = np.array(classifier4(feature).detach().cpu())
+    # Create iterators for data loading
+    dataloader = data.DataLoader(dataset, batch_size=bs, shuffle=True,
+                                num_workers=num_cpu, pin_memory=True, drop_last=True)
 
-    for pred_i in range(bs):
-        norm_prob_0 = preprocessing.normalize([out_prob0[pred_i]])
-        norm_prob_1 = preprocessing.normalize([out_prob1[pred_i]])
-        norm_prob_2 = preprocessing.normalize([out_prob2[pred_i]])
-        norm_prob_3 = preprocessing.normalize([out_prob3[pred_i]])
-        norm_prob_4 = preprocessing.normalize([out_prob4[pred_i]])
-        # norm_prob_0 = softmax(out_prob0[pred_i])
-        # norm_prob_1 = softmax(out_prob1[pred_i])
-        # norm_prob_2 = softmax(out_prob2[pred_i])
-        # norm_prob_3 = softmax(out_prob3[pred_i])
-        # norm_prob_4 = softmax(out_prob4[pred_i])
-        norm_prob_all = norm_prob_0 + norm_prob_1 + norm_prob_2 + norm_prob_3 + norm_prob_4
-        preds[pred_i] = np.argmax(norm_prob_all)
+    # Number of classes
+    num_classes = len(dataset.classes)
 
-    preds_list = list(preds)
-    labels_list = list(np.array(labels.cpu()))
-    pred.append(preds_list)
-    true.append(labels_list)
+    print("Validation-set size: {}".format(len(dataset)))
 
-pred = sum(pred, [])
-true = sum(true, [])
-# epoch_acc = running_corrects.double() / dataset_sizes['valid']
-cm = confusion_matrix(true, pred)
-f1 = f1_score(true, pred, average='macro')
-print('f1 score:  ', f1)
-# np.savetxt("cm_0221_triple_200.csv", cm, delimiter=",")
-time_elapsed = time.time() - since
-print('Training complete in {:.0f}m {:.0f}s'.format(
-    time_elapsed // 60, time_elapsed % 60))
-balance_acc = balanced_accuracy_score(true, pred)
-print('Best balance Acc: {:4f}'.format(balance_acc))
 
-plt.savefig(cm, f'{FOLDER_NAME}/cm.jpg')
+    since = time.time()
+    best_acc = 0.0
 
-'''
-Sample run: python train.py --mode=finetue
-'''
+    model.eval()  # Set model to evaluate mode
+    running_corrects = 0
+
+    pred = []
+    true = []
+    for inputs, labels in tqdm(dataloader):
+        inputs = inputs.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
+
+        # forward
+        # outputs = model(inputs)
+        # _, preds = torch.max(outputs, 1)
+        preds = np.zeros(bs)
+        feature = model(inputs)
+        out_prob0 = np.array(classifier0(feature).detach().cpu())
+        out_prob1 = np.array(classifier1(feature).detach().cpu())
+        out_prob2 = np.array(classifier2(feature).detach().cpu())
+        out_prob3 = np.array(classifier3(feature).detach().cpu())
+        out_prob4 = np.array(classifier4(feature).detach().cpu())
+
+        for pred_i in range(bs):
+            norm_prob_0 = preprocessing.normalize([out_prob0[pred_i]])
+            norm_prob_1 = preprocessing.normalize([out_prob1[pred_i]])
+            norm_prob_2 = preprocessing.normalize([out_prob2[pred_i]])
+            norm_prob_3 = preprocessing.normalize([out_prob3[pred_i]])
+            norm_prob_4 = preprocessing.normalize([out_prob4[pred_i]])
+            # norm_prob_0 = softmax(out_prob0[pred_i])
+            # norm_prob_1 = softmax(out_prob1[pred_i])
+            # norm_prob_2 = softmax(out_prob2[pred_i])
+            # norm_prob_3 = softmax(out_prob3[pred_i])
+            # norm_prob_4 = softmax(out_prob4[pred_i])
+            norm_prob_all = norm_prob_0 + norm_prob_1 + norm_prob_2 + norm_prob_3 + norm_prob_4
+            preds[pred_i] = np.argmax(norm_prob_all)
+
+        preds_list = list(preds)
+        labels_list = list(np.array(labels.cpu()))
+        pred.append(preds_list)
+        true.append(labels_list)
+
+    pred = sum(pred, [])
+    true = sum(true, [])
+    # epoch_acc = running_corrects.double() / dataset_sizes['valid']
+    cm = confusion_matrix(true, pred)
+    f1 = f1_score(true, pred, average='macro')
+    print('f1 score:  ', f1)
+    # np.savetxt("cm_0221_triple_200.csv", cm, delimiter=",")
+    time_elapsed = time.time() - since
+    # print('Training complete in {:.0f}m {:.0f}s'.format(
+    #     time_elapsed // 60, time_elapsed % 60))
+    balance_acc = balanced_accuracy_score(true, pred)
+    print('Best balance Acc: {:4f}'.format(balance_acc))
+
+    # print(np.unique(true), np.unique(pred))
+    # print(cm)
+    # print(dataset.class_to_idx.keys())
+
+    # disp = ConfusionMatrixDisplay.from_predictions(y_true=true, y_pred=pred, labels=list(dataset.class_to_idx.keys()))
+    # fig = plt.figure()
+    # disp.plot()
+    # plt.savefig(f'../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/confusion_matrix/{subset}.jpg')
+
+    results['subset'].append(subset)
+    results['f1'].append(f1)
+    results['balanced_acc'].append(balance_acc)
+
+
+df = pd.DataFrame(results)
+print(df)
+
+df.to_csv(f'../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/test_result.csv', index=False)

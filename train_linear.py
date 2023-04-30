@@ -2,8 +2,9 @@ from datasets.folder_dataset import ImageFolder
 from tools import get_args, AverageMeter, Logger
 from augmentations import get_aug
 from models import get_model, get_backbone
-from datasets import get_dataset
+from datasets import get_dataset, FinetuneDataset
 from optimizers import get_optimizer, get_scheduler
+from losses import FocalLoss
 
 import os
 import shutil
@@ -27,8 +28,8 @@ import pathlib
 def main(args):
     # create log & ckpt
     dt = '_' + datetime.now().strftime('%m%d%H%M%S')
-    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name + '_finetune' + dt)
-    args.ckpt_dir = os.path.join(args.ckpt_dir, args.name + '/finetune' + dt)
+    args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name + '_finetune_' + str(args.eval.name) + dt)
+    args.ckpt_dir = os.path.join(args.ckpt_dir, args.name + '/finetune_' + str(args.eval.name))
     if os.path.exists(args.log_dir):
       print(f'use folder {args.log_dir}')
     else:
@@ -41,8 +42,12 @@ def main(args):
       print(f'creating folder {args.ckpt_dir}')
     shutil.copy2(args.config_file, args.log_dir)
 
-    dataset = ImageFolder(root=args.val_dir, transform=get_aug(args.aug, train=False))
+    # dataset = ImageFolder(root=args.val_dir, transform=get_aug(args.aug, train=False))
+    dataset = FinetuneDataset(data_dir=args.val_dir, name=str(args.eval.dataset), transform=get_aug(args.aug, train=False))
+    print(len(dataset), dataset.classes)
     splits = KFold(n_splits=args.eval.fold, shuffle=True, random_state=args.seed)
+
+    focal_loss = FocalLoss()
     
     train_info = []
     best_epoch = np.zeros(5)
@@ -111,7 +116,7 @@ def main(args):
             loss_meter.reset()
             acc_meter.reset()
             classifier.train()
-            local_progress = tqdm(train_loader, desc=f'Epoch {epoch}/{args.eval.num_epochs}')
+            local_progress = tqdm(train_loader, desc=f'Epoch {epoch}/{args.eval.num_epochs}', disable=args.hide_progress)
 
             for idx, (images, labels) in enumerate(local_progress):
                 classifier.zero_grad()
@@ -120,7 +125,8 @@ def main(args):
 
                 preds = classifier(feature)
 
-                loss = F.cross_entropy(preds, labels.to(args.device))
+                # loss = F.cross_entropy(preds, labels.to(args.device))
+                loss = focal_loss(preds, labels.to(args.device))
 
                 loss.backward()
                 optimizer.step()
@@ -167,7 +173,8 @@ def main(args):
                 with torch.no_grad():
                     feature = model(images.to(args.device))
                     preds = classifier(feature)
-                    loss = F.cross_entropy(preds, labels.to(args.device))
+                    # loss = F.cross_entropy(preds, labels.to(args.device))
+                    loss = focal_loss(preds, labels.to(args.device))
                     loss_meter.update(loss.item(), n=preds.shape[0])
                     preds = preds.argmax(dim=1)
                     correct = (preds == labels.to(args.device)).sum().item()
