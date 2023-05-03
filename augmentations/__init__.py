@@ -70,7 +70,7 @@ def get_aug(aug_cfg, train=True):
         # if train_classifier is None:
         #     raise Exception
             
-        augmentation = Transform_single(image_size=aug_cfg.image_size, train=False)
+        augmentation = Transform_single(image_size=128, train=False)
 
     else:
         raise Exception

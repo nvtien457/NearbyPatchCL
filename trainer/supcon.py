@@ -5,10 +5,12 @@ from optimizers import warmup_learning_rate, adjust_learning_rate
 from tools import accuracy
 
 def supcon_train(inputs, labels, model, criterion, args):
+    batch_size = labels.shape[0]
+
     img_1 = inputs[0][0]
     img_2 = inputs[0][1]
-    img_3 = inputs[1][0]
-    batch_size = labels.shape[0]
+    nearby = inputs[1]
+    img_3 = torch.cat(nearby, dim=0)
 
     img_1 = img_1.to(args.device)
     img_2 = img_2.to(args.device)

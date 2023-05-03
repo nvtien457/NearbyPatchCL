@@ -1,4 +1,4 @@
-name: Tien_SupCon_10_256
+name: Tien_SupCon0247_10_256
 
 model:
   name: supcon
@@ -10,9 +10,8 @@ model:
 dataset:
   name: CATCH
   params:
-    name: 20
-    use_nearby: True
-    patch_id: 0
+    name: 10
+    nearby: [0, 2, 4, 7]
 
 aug:
   name: supcon
@@ -20,7 +19,7 @@ aug:
     image_size: 128
 
 train:
-  batch_size: 128
+  batch_size: 64
   iters_to_accumulate: 4
   stop_epoch: 200
   num_epochs: 250
@@ -72,12 +71,12 @@ eval:
       final_lr: 0.0001
 
 seed: 17
-num_workers: 1
+num_workers: 4
 tensorboard: True
 matplotlib: True
 
 
 resume:
-  status: True
-  ckpt: ../checkpoints/MaskTien_SupCon_10_256/ckpt_best_099.pth
-  event: None
+  status: False
+  ckpt: ../checkpoints/Tien_SupCon0724_10_256/ckpt_014.pth
+  event: ../logs/in-progress_Tien_SupCon0724_10_256_0503102405/events.out.tfevents.1683109445.selab4

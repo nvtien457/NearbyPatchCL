@@ -62,7 +62,7 @@ class NT_Xent(nn.Module):
         positive_samples = torch.cat((sim_i_j, sim_j_i), dim=0).reshape(N, 1)   # (2B x 1)
         negative_samples = sim[mask].reshape(N, -1)                             # (2B x (2B-2))
 
-        labels = torch.zeros(N).to(positive_samples.device).long()          # 2B
+        labels = torch.zeros(N).to(positive_samples.device).long()          # 2B x 2B
         logits = torch.cat((positive_samples, negative_samples), dim=1)     # 2B x 2B-1
         loss = self.criterion(logits, labels)
         loss /= N

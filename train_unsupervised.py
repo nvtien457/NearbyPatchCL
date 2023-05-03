@@ -95,7 +95,7 @@ def main(args):
                                                                                 checkpoint['epoch'], scheduler.iter, best_loss))
 
     # Start training
-    global_progress = tqdm(range(start_epoch, args.train.stop_epoch), initial=start_epoch, total=args.train.num_epochs-1, desc='Training')
+    global_progress = tqdm(range(start_epoch, args.train.num_epochs), initial=start_epoch, total=args.train.num_epochs-1, desc='Training')
 
     trainer = Trainer(train_loader=train_loader, model=model, scaler=scaler,
                     criterion=criterion, optimizer=optimizer, scheduler=scheduler, 

@@ -97,62 +97,83 @@ import torch.nn as nn
 
 
 class SupConLoss(nn.Module):
-    def __init__(self, temperature=0.07, eps=1e-6):
+    def __init__(self, temperature=0.07, eps=1e-6, threshold=1):
         super(SupConLoss, self).__init__()
         self.temperature = temperature
         self.similarity_f = nn.CosineSimilarity(dim=2)
         self.eps = eps
+        self.threshold = threshold
 
-    def mask_correlated_samples(self, batch_size):
-        mask = torch.ones((2*batch_size, 3*batch_size), dtype=bool)
+    def mask_negative(self, batch_size, nearby_size):
+        mask = torch.ones((batch_size*2, batch_size * (2 + nearby_size)), dtype=bool)
         mask = mask.fill_diagonal_(0)
-        for i in range(batch_size):
-            mask[i, batch_size+i] = 0
-            # mask[batch_size+i, 2*batch_size+i] = 0
-            # mask[i, 2*batch_size+i] = 0
-            mask[batch_size+i, i] = 0
-        mask[:,2*batch_size:] = 0
+        # for i in range(batch_size):
+        #     mask[i, batch_size+i] = 0
+        #     mask[batch_size+i, i] = 0
+        mask[:,2*batch_size:] = 0       # remove nearby from negative samples
         return mask
 
-    def forward(self, z1, z2, zn):
-        batch_size = z1.shape[0]               # B
+    def mask_positive(self, batch_size, nearby_size):
+        mask = torch.zeros((batch_size*2, batch_size * (2 + nearby_size)), dtype=bool)
+        for i in range(batch_size):
+            mask[i, batch_size+i] = 1
+            mask[batch_size+i, i] = 1
+            for nb in range(nearby_size):
+                mask[i, 2*batch_size + nb*batch_size + i] = 1
+                mask[batch_size+i, 2*batch_size + nb*batch_size + i] = 1      
+        return mask
 
-        mask = self.mask_correlated_samples(batch_size)    # only negative sample (different samples in batch)
-        # (2B x 3B)
-        # print(mask)
+    def mask_threshold(self, batch_size, nearby_size):
+        mask = torch.ones((batch_size*2, batch_size * (2 + nearby_size)), dtype=bool)
+
+    def forward(self, z1, z2, zn):
+        batch_size = z1.shape[0]                # B
+        nearby_size = zn.shape[0] // batch_size # N
+
+        neg_mask = self.mask_negative(batch_size, nearby_size)    # (2B x (2B-2))
+        pos_mask = self.mask_positive(batch_size, nearby_size)    # (2B x (2B + N*B))
+
+        # print(neg_mask)
+        # print('='*24)
+        # print(pos_mask)
 
         z = torch.cat((z1, z2), dim=0)        # (2B x D)
-        f = torch.cat((z1,z2, zn), dim=0)     # (3B x D)
+        f = torch.cat((z1,z2, zn), dim=0)     # ((2B + N*B) x D)
 
-        sim = self.similarity_f(z.unsqueeze(1), f.unsqueeze(0))
+        sim = self.similarity_f(z.unsqueeze(1), f.unsqueeze(0))     # 2B x (2B + N*B)
+
+        sim_aug = sim[:,:(2*batch_size)]
+        sim_nearby = sim[:,(2 + nearby_size)*batch_size]
+        
+        thres_mask = torch.ones_like(sim_nearby) * self.threshold
+        sim = torch.cat((sim_aug, torch.minimum(sim_nearby, thres_mask), dim=1)
+
         # print('sim:', torch.min(sim), torch.max(sim))
-        logit = torch.exp(torch.div(sim, self.temperature))  # (2B x 3B)
+        logit = torch.exp(torch.div(sim, self.temperature))  # (2B x (2B + N*B))
         # print('logit:', torch.min(logit), torch.max(logit))
         # logit_max, _ = torch.max(logit, dim=1, keepdim=True)
         # logit_min, _ = torch.min(logit, dim=1, keepdim=True)
         # logit = (logit) / (logit_max.detach() - logit_min.detach())
         # print('logit (after):', torch.min(logit), torch.max(logit))
 
-        positive_samples = torch.cat((
-            torch.diag(logit, batch_size),
-            torch.diag(logit, -batch_size),
-            torch.diag(logit, 2*batch_size)
-        ), dim=0).reshape(2*batch_size, -1)                      # ( 2B x 2 )
-        negative_samples = logit[mask].reshape(2*batch_size, -1)  # ( 2B x (2B-2) )
 
-        # print(positive_samples.shape, negative_samples.shape)
+        positive_samples = logit[pos_mask].reshape(2*batch_size, -1)  # ( 2B x (N+1) )
+        negative_samples = logit[neg_mask].reshape(2*batch_size, -1)  # ( 2B x (2B-2) )
 
-        sum_neg = torch.sum(negative_samples, dim=1, keepdim=True)  # (2Bx1)
+        # print(positive_samples.shape)
+        # print(negative_samples.shape)
+
+        sum_neg = torch.sum(negative_samples, dim=1, keepdim=True)              # ( 2B x 1 )
         # print('sum_neg:', torch.min(sum_neg), torch.max(sum_neg))
-        prob = torch.div(positive_samples, sum_neg + self.eps)                 # (2Bx2)
+        prob = torch.div(positive_samples, sum_neg + self.eps)                  # ( 2B x (N+1) )
         # print('pos:', torch.min(positive_samples), torch.max(positive_samples))
         # print('prob:', torch.min(prob), torch.max(prob))
-        log_prob = -torch.log(prob)                                 # (2Bx4)
+        log_prob = -torch.log(prob)                                             # ( 2B x (N+1) )
         # print('log_prob:', torch.min(log_prob), torch.max(log_prob))
-        mean_log_prob = torch.mean(log_prob, dim=1)             # (B)
+        mean_log_prob = torch.mean(log_prob, dim=1)                             # ( 2B x 1 )
         # print('mean_log_prob:', torch.min(mean_log_prob), torch.max(mean_log_prob))
         loss = torch.sum(mean_log_prob)                       
 
-        loss /= batch_size
+        loss /= 2 * batch_size
 
         return loss
