@@ -1,6 +1,8 @@
 #modified from https://github.com/facebookresearch/swav/blob/master/src/multicropdataset.py
 from torchvision import transforms
 from augmentations.RandAugment import RandAugment
+import random
+from PIL import ImageFilter
 
 class GaussianBlur(object):
     """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709"""
@@ -13,13 +15,17 @@ class GaussianBlur(object):
         x = x.filter(ImageFilter.GaussianBlur(radius=sigma))
         return x
 
+imagenet_mean_std = [[0.485, 0.456, 0.406],[0.229, 0.224, 0.225]]
+
 class Multi_Fixtransform(object):
     def __init__(self,
             size_crops,
             nmb_crops,
             min_scale_crops,
-            max_scale_crops,normalize,
-            aug_times,init_size=224):
+            max_scale_crops,
+            aug_times,
+            normalize=transforms.Normalize(*imagenet_mean_std),
+            init_size=128):
         """
         :param size_crops: list of crops with crop output img size
         :param nmb_crops: number of output cropped image
@@ -47,6 +53,7 @@ class Multi_Fixtransform(object):
         ])
         trans.append(self.weak)
         self.aug_times=aug_times
+        
         trans_weak=[]
         trans_strong=[]
         for i in range(len(size_crops)):

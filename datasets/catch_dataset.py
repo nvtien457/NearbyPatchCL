@@ -57,7 +57,7 @@ class CATCHDataset(torch.utils.data.Dataset):
                     raise ValueError(f'Image {image_path} is not loaded')
             f.close()
             
-        # print('Missing images:', self.missing_image_path)
+        print('Number of missing images:', len(self.missing_image_path))
 
     def __getitem__(self, idx):
         image_path = self.list_image_path[idx]

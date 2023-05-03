@@ -28,14 +28,17 @@ class MoCo(nn.Module):
 
         if mlp:  # hack: brute-force replacement
             dim_mlp = backbone.output_dim
-            self.encoder_q.fc = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(), nn.Linear(dim_mlp, dim))
-            self.encoder_k.fc = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(), nn.Linear(dim_mlp, dim))
+            self.backbone.fc = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(), nn.Linear(dim_mlp, dim))
+            self.backbone_k.fc = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(), nn.Linear(dim_mlp, dim))
+
+            self.encoder_q = self.backbone
+            self.encoder_k = self.backbone_k
         else:
             self.projector_q = nn.Linear(backbone.output_dim, dim)
             self.projector_k = nn.Linear(backbone.output_dim, dim)
 
-        self.encoder_q = nn.Sequential(self.backbone, self.projector_q)
-        self.encoder_k = nn.Sequential(self.backbone_k, self.projector_k)
+            self.encoder_q = nn.Sequential(self.backbone, self.projector_q)
+            self.encoder_k = nn.Sequential(self.backbone_k, self.projector_k)
 
         for param_q, param_k in zip(self.encoder_q.parameters(), self.encoder_k.parameters()):
             param_k.data.copy_(param_q.data)    # initialize

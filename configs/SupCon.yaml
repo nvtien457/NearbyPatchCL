@@ -51,12 +51,12 @@ train:
       constant_predictor_lr: False
 
 eval:
-  batch_size: 128
+  batch_size: 256
   num_epochs: 30
   fold: 5
   eval_from: ../checkpoints/Tien_SupCon_10_256/ckpt_best_099.pth
-  name: e100_p10
-  dataset: 10
+  name: e100_p75
+  dataset: 75
 
   optimizer:
     name: sgd

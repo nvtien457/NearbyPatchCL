@@ -2,6 +2,7 @@ from .moco_aug import MoCoTransform, GaussianBlur
 from .simclr_aug import SimCLRTransform
 from .byol_aug import BYOLTransform
 from .supcon_aug import SupConTransform
+from .Multi_FixTransform import Multi_Fixtransform
 
 import torchvision.transforms as T
 
@@ -58,6 +59,9 @@ def get_aug(aug_cfg, train=True):
         elif name == 'supcon':
             augmentation = TwoCropsTransform(SupConTransform(**aug_cfg.params))
 
+        elif name == 'clsa':
+            augmentation = Multi_Fixtransform(**aug_cfg.params)
+
         else:
             raise NotImplementedError
 
@@ -66,7 +70,7 @@ def get_aug(aug_cfg, train=True):
         # if train_classifier is None:
         #     raise Exception
             
-        augmentation = Transform_single(image_size=aug_cfg.params['image_size'], train=False)
+        augmentation = Transform_single(image_size=aug_cfg.image_size, train=False)
 
     else:
         raise Exception

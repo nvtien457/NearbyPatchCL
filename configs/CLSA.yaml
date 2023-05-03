@@ -1,0 +1,97 @@
+name: Tien_CLSA_10_256
+
+model:
+  name: clsa
+  backbone: resnet50
+  params:
+    dim: 128
+    K: 65536
+    m: 0.999
+    T: 0.2
+    t: 0.2
+    mlp: True
+    pick_strong: [0, 1, 2, 3, 4]
+    pick_weak: [0, 1, 2, 3, 4]
+    sym: False
+
+dataset:
+  name: CATCH
+  params:
+    name: 3
+
+aug:
+  name: clsa
+  image_size: 128
+  params:
+    # size_crops: [224, 192, 160, 128, 96]
+    # nmb_crops: [1, 1, 1, 1, 1]
+    # min_scale_crops: [0.2, 0.172, 0.143, 0.114, 0.086]
+    # max_scale_crops: [1.0, 0.86, 0.715, 0.571, 0.429]
+    # aug_times: 5
+    size_crops: [128, 96]
+    nmb_crops: [1, 1]
+    min_scale_crops: [0.114, 0.086]
+    max_scale_crops: [0.571, 0.429]
+    aug_times: 2
+    init_size: 128
+    
+
+train:
+  batch_size: 128
+  iters_to_accumulate: 2
+  stop_epoch: 200
+  num_epochs: 250
+  save_interval: 5
+  knn_monitor: True
+  knn_interval: 5
+  knn_k: 200
+
+  alpha: 1
+
+  criterion:
+    name: CE
+    params: None
+  metrics: ['acc_1']
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 0.03
+      momentum: 0.9
+      weight_decay: 0.0001
+
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 10
+      warmup_lr: 0.001
+      final_lr: 0.0001
+
+eval:
+  batch_size: 256
+  num_epochs: 30
+  fold: 5
+  eval_from: ../checkpoints/Tien_MoCo_10_256/ckpt_099.pth
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 30
+      momentum: 0.9
+      weight_decay: 0
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 5
+      warmup_lr: 0.1
+      final_lr: 0.0001
+
+seed: 23
+num_workers: 1
+tensorboard: True
+matplotlib: True
+
+resume:
+  status: False
+  ckpt: None
+  event: None

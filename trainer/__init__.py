@@ -8,6 +8,7 @@ from .simsiam import simsiam_train
 from .byol import byol_train
 from .simtriplet import simtriplet_train
 from .supcon import supcon_train
+from .clsa import clsa_train
 
 import sys
 sys.path.append('../')
@@ -48,6 +49,9 @@ class Trainer:
 
         elif args.model.name == 'supcon':
             self.train_func = supcon_train
+
+        elif args.model.name == 'clsa':
+            self.train_func = clsa_train
 
         else:
             raise NotImplementedError
