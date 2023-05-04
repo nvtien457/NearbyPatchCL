@@ -70,13 +70,13 @@ eval:
       warmup_lr: 0.01
       final_lr: 0.0001
 
-seed: 17
+seed: 7
 num_workers: 4
 tensorboard: True
 matplotlib: True
 
 
 resume:
-  status: False
-  ckpt: ../checkpoints/Tien_SupCon0724_10_256/ckpt_014.pth
-  event: ../logs/in-progress_Tien_SupCon0724_10_256_0503102405/events.out.tfevents.1683109445.selab4
+  status: True
+  ckpt: ../checkpoints/Tien_SupCon07_10_256/ckpt_best_015.pth
+  event: ../logs/in-progress_Tien_SupCon07_10_256_0504095957/events.out.tfevents.1683194397.selab3
