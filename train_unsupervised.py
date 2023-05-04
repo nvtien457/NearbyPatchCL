@@ -106,6 +106,7 @@ def main(args):
         # Training
         metrics = trainer.train(epoch)
         # break
+
         loss = metrics['loss_avg']
         
         epoch_dict = dict()

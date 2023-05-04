@@ -1,4 +1,4 @@
-name: Tien_SupCon07_10_256
+name: Tien_SupCon0247_10_256
 
 model:
   name: supcon
@@ -11,7 +11,7 @@ dataset:
   name: CATCH
   params:
     name: 10
-    nearby: [0, 7]
+    nearby: [0, 2, 4, 7]
 
 aug:
   name: supcon
@@ -19,8 +19,8 @@ aug:
     image_size: 128
 
 train:
-  batch_size: 128
-  iters_to_accumulate: 2
+  batch_size: 64
+  iters_to_accumulate: 4
   stop_epoch: 200
   num_epochs: 250
   save_interval: 5

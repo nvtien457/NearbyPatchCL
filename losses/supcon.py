@@ -130,50 +130,78 @@ class SupConLoss(nn.Module):
         batch_size = z1.shape[0]                # B
         nearby_size = zn.shape[0] // batch_size # N
 
-        neg_mask = self.mask_negative(batch_size, nearby_size)    # (2B x (2B-2))
-        pos_mask = self.mask_positive(batch_size, nearby_size)    # (2B x (2B + N*B))
+        # neg_mask = self.mask_negative(batch_size, nearby_size)    # (2B x (2B-2))
+        # pos_mask = self.mask_positive(batch_size, nearby_size)    # (2B x (2B + N*B))
 
         # print(neg_mask)
         # print('='*24)
         # print(pos_mask)
 
-        z = torch.cat((z1, z2), dim=0)        # (2B x D)
-        f = torch.cat((z1,z2, zn), dim=0)     # ((2B + N*B) x D)
+        za = torch.cat((z1, z2), dim=0)        # (2B x D)
 
-        sim = self.similarity_f(z.unsqueeze(1), f.unsqueeze(0))     # 2B x (2B + N*B)
+        # sim = self.similarity_f(z.unsqueeze(1), f.unsqueeze(0))     # 2B x (2B + N*B)
+        sim_aug_aug     = self.similarity_f(za.unsqueeze(1), za.unsqueeze(0))   # 2B x 2B
+        sim_aug_nearby  = self.similarity_f(za.unsqueeze(1), zn.unsqueeze(0))   # 2B x N*B
 
-        sim_aug = sim[:,:(2*batch_size)]
-        sim_nearby = sim[:,(2 + nearby_size)*batch_size]
+        # print(sim_aug_aug.shape, sim_aug_nearby.shape)
         
-        thres_mask = torch.ones_like(sim_nearby) * self.threshold
-        sim = torch.cat((sim_aug, torch.minimum(sim_nearby, thres_mask), dim=1)
+        thres_mask = torch.ones_like(sim_aug_nearby) * self.threshold           # 2B x N*B
+        sim_aug_nearby = torch.minimum(sim_aug_nearby, thres_mask)
+
+        # print('sim_aug_aug:', torch.min(sim_aug_aug), torch.max(sim_aug_aug))
+        # print('sim_aug_nearby:', torch.min(sim_aug_nearby), torch.max(sim_aug_nearby))
 
         # print('sim:', torch.min(sim), torch.max(sim))
-        logit = torch.exp(torch.div(sim, self.temperature))  # (2B x (2B + N*B))
+        # logit = torch.exp(torch.div(sim, self.temperature))  # (2B x (2B + N*B))
+        logit_aug_aug = torch.exp(torch.div(sim_aug_aug, self.temperature))     # 2B x 2B
+        logit_aug_nearby = torch.exp(torch.div(sim_aug_nearby, self.temperature))   # 2B x N*B
         # print('logit:', torch.min(logit), torch.max(logit))
         # logit_max, _ = torch.max(logit, dim=1, keepdim=True)
         # logit_min, _ = torch.min(logit, dim=1, keepdim=True)
         # logit = (logit) / (logit_max.detach() - logit_min.detach())
         # print('logit (after):', torch.min(logit), torch.max(logit))
 
+        # print(logit_aug_aug.shape, logit_aug_nearby.shape)
 
-        positive_samples = logit[pos_mask].reshape(2*batch_size, -1)  # ( 2B x (N+1) )
-        negative_samples = logit[neg_mask].reshape(2*batch_size, -1)  # ( 2B x (2B-2) )
+        # print('logit_aug_aug:', torch.min(logit_aug_aug), torch.max(logit_aug_aug))
+        # print('logit_aug_nearby:', torch.min(logit_aug_nearby), torch.max(logit_aug_nearby))
 
-        # print(positive_samples.shape)
+        # positive_samples = logit[pos_mask].reshape(2*batch_size, -1)  # ( 2B x (N+1) )
+        # negative_samples = logit[neg_mask].reshape(2*batch_size, -1)  # ( 2B x (2B-2) )
+
+        neg_mask = torch.ones_like(logit_aug_aug, dtype=bool).fill_diagonal_(0)
+        negative_samples = logit_aug_aug[neg_mask].reshape(2*batch_size, -1)    # ( 2B x (2B-1) )
+
+        positive_samples_aug = torch.cat((
+            torch.diag(logit_aug_aug, batch_size),
+            torch.diag(logit_aug_aug, -batch_size)
+        ), dim=0).reshape(2*batch_size, -1)         # ( 2B x 1 )
+
+        positive_samples_nearby = torch.cat([torch.diag(logit_aug_nearby, i*batch_size) for i in range(-1, nearby_size)]).reshape(2*batch_size, -1)
+                                                    # ( 2B x N )
+
+        # print(positive_samples_aug.shape, positive_samples_nearby.shape)
         # print(negative_samples.shape)
 
         sum_neg = torch.sum(negative_samples, dim=1, keepdim=True)              # ( 2B x 1 )
+        # print(sum_neg.shape)
         # print('sum_neg:', torch.min(sum_neg), torch.max(sum_neg))
-        prob = torch.div(positive_samples, sum_neg + self.eps)                  # ( 2B x (N+1) )
-        # print('pos:', torch.min(positive_samples), torch.max(positive_samples))
-        # print('prob:', torch.min(prob), torch.max(prob))
-        log_prob = -torch.log(prob)                                             # ( 2B x (N+1) )
-        # print('log_prob:', torch.min(log_prob), torch.max(log_prob))
-        mean_log_prob = torch.mean(log_prob, dim=1)                             # ( 2B x 1 )
+        prob_aug_aug = torch.div(positive_samples_aug, sum_neg + self.eps)                  # ( 2B x 1 )
+        prob_aug_nearby = torch.div(positive_samples_nearby, sum_neg + self.eps)            # ( 2B x N )
+        # print(prob_aug_aug.shape, prob_aug_nearby.shape)
+        # print('pos_aug:', torch.min(positive_samples_aug), torch.max(positive_samples_aug))
+        # print('prob_aug:', torch.min(prob_aug_aug), torch.max(prob_aug_aug))
+        # print('pos_nearby:', torch.min(positive_samples_nearby), torch.max(positive_samples_nearby))
+        # print('prob_nearby:', torch.min(prob_aug_nearby), torch.max(prob_aug_nearby))
+        log_prob_aug = -torch.log(prob_aug_aug)                                 # ( 2B x 1 )
+        log_prob_nearby = -torch.log(prob_aug_nearby)                           # ( 2B x N )
+        # print('log_prob_aug:', torch.min(log_prob_aug), torch.max(log_prob_aug))
+        # print('log_prob_nearby:', torch.min(log_prob_nearby), torch.max(log_prob_nearby))
+        mean_log_prob = torch.div(nearby_size * log_prob_aug + torch.sum(log_prob_nearby, dim=1, keepdim=True), 2*nearby_size)  # ( 2B x 1 )
+        # print(torch.sum(log_prob_nearby, dim=1, keepdim=True).shape, mean_log_prob.shape)
         # print('mean_log_prob:', torch.min(mean_log_prob), torch.max(mean_log_prob))
-        loss = torch.sum(mean_log_prob)                       
+        loss = torch.sum(mean_log_prob)
 
-        loss /= 2 * batch_size
+        loss /= 2*batch_size
 
-        return loss
+        return loss                       
