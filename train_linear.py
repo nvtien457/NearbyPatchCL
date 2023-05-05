@@ -92,10 +92,10 @@ def main(args):
         classifier = nn.Linear(in_features=backbone.output_dim, out_features=num_classes, bias=True).to(args.device)
 
         # Use Mixed Precision Training
-        args.eval.optimizer.params['lr']        = args.eval.optimizer.params['lr']        * args.eval.batch_size / 256
-        args.eval.scheduler.params['base_lr']   = args.eval.scheduler.params['base_lr']   * args.eval.batch_size / 256
-        args.eval.scheduler.params['warmup_lr'] = args.eval.scheduler.params['warmup_lr'] * args.eval.batch_size / 256
-        args.eval.scheduler.params['final_lr']  = args.eval.scheduler.params['final_lr']  * args.eval.batch_size / 256
+        # args.eval.optimizer.params['lr']        = args.eval.optimizer.params['lr']        * args.eval.batch_size / 256
+        # args.eval.scheduler.params['base_lr']   = args.eval.scheduler.params['base_lr']   * args.eval.batch_size / 256
+        # args.eval.scheduler.params['warmup_lr'] = args.eval.scheduler.params['warmup_lr'] * args.eval.batch_size / 256
+        # args.eval.scheduler.params['final_lr']  = args.eval.scheduler.params['final_lr']  * args.eval.batch_size / 256
 
         # Number of iteration per epoch
         iter_per_epoch = len(train_loader)

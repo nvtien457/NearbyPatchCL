@@ -20,8 +20,8 @@ from sklearn.metrics import confusion_matrix, f1_score, balanced_accuracy_score,
 from torchvision.models import resnet50, resnet18
 
 FOLDER_NAME = 'Tien_SupCon_10_256'
-FINETUNE_NAME = 'finetune_e100_p10'
-MODEL   = f"../checkpoints/{FOLDER_NAME}/ckpt_049.pth"
+FINETUNE_NAME = 'finetune_0_e100_p100'
+MODEL   = f"../checkpoints/{FOLDER_NAME}/ckpt_best_099.pth"
 CLASSI0 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_0.pth"
 CLASSI1 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_1.pth"
 CLASSI2 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_2.pth"
@@ -54,7 +54,7 @@ image_transforms = {
 
 
 # Batch size
-bs = 64
+bs = 128
 # Number of workers
 # num_cpu = multiprocessing.cpu_count()
 num_cpu = 4

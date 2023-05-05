@@ -1,4 +1,4 @@
-name: Tien_SupCon07_10_256
+name: Tien_SupCon_10_256
 
 model:
   name: supcon
@@ -50,25 +50,25 @@ train:
       constant_predictor_lr: False
 
 eval:
-  batch_size: 256
+  batch_size: 512
   num_epochs: 30
   fold: 5
-  eval_from: ../checkpoints/Tien_SupCon07_10_256/ckpt_049.pth
-  name: e50_p10
-  dataset: 10
+  eval_from: ../checkpoints/Tien_SupCon_10_256/ckpt_best_099.pth
+  name: 0_e100_p100
+  dataset: 100
 
   optimizer:
     name: sgd
     params:
-      lr: 0.1
+      lr: 0.005
       momentum: 0.9
       weight_decay: 0
   scheduler:
     name: lr_scheduler
     params:
       warmup_epochs: 10
-      warmup_lr: 0.01
-      final_lr: 0.0001
+      warmup_lr: 0.001
+      final_lr: 0.00001
 
 seed: 7
 num_workers: 4

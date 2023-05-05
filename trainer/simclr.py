@@ -6,8 +6,8 @@ from tools import accuracy
 def simclr_train(inputs, labels, model, criterion, args):
     batch_size = labels.shape[0]
 
-    x_i = inputs[0]
-    x_j = inputs[1]
+    x_i = inputs[0][0]
+    x_j = inputs[0][1]
 
     x_i = x_i.to(args.device)
     x_j = x_j.to(args.device)
