@@ -22,6 +22,9 @@ def get_dataset(dataset_cfg, transform=None, debug_subset_size=None):
     elif dataset == 'CATCH':
         dataset = CATCHDataset(transform=transform, **dataset_cfg.params)
 
+    elif dataset == 'finetune':
+        dataset = FinetuneDataset(transform=transform, **dataset_cfg.params)
+
     else:
         raise NotImplementedError
 

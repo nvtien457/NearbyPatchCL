@@ -19,7 +19,9 @@ class FinetuneDataset(torch.utils.data.Dataset):
         self.labels = []
         self.missing_image_path = []
 
-        self.classes = {cls: i for i, cls in enumerate(os.listdir(data_dir + '/VAL_SET'))}
+        cancer_lst = os.listdir(data_dir + '/VAL_SET')
+        cancer_lst.sort()
+        self.classes = {cls: i for i, cls in enumerate(cancer_lst)}
 
         for file in os.listdir(self.folder_dataset_path):   # .txt file contain path to image
             c = file.split('_')[0]

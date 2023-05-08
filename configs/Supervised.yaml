@@ -1,0 +1,60 @@
+name: Tien_SupervisedSGD_10_256
+
+model:
+  name: supervised
+  backbone: resnet50
+  params:
+    num_classes: 6
+
+dataset:
+  name: finetune
+  params:
+    name: 100
+
+aug:
+  name: single_simclr
+  params:
+    image_size: 128
+
+train:
+  batch_size: 256
+  iters_to_accumulate: 1
+  stop_epoch: 50
+  num_epochs: 50
+  save_interval: 5
+  knn_monitor: True
+  knn_interval: 5
+  knn_k: 200
+
+  criterion:
+    name: focal
+    params: None
+  metrics: []
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 0.05
+      momentum: 0.9
+      weight_decay: 0.0001
+      
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 10
+      warmup_lr: 0.01
+      final_lr: 0.0001
+      constant_predictor_lr: False
+
+eval: None
+
+seed: 19
+num_workers: 4
+tensorboard: True
+matplotlib: True
+
+
+resume:
+  status: False
+  ckpt: ../checkpoints/Tien_SupCon07_10_256/ckpt_099.pth
+  event: ../logs/in-progress_Tien_SupCon07_10_256_0504133902/events.out.tfevents.1683207542.selab3

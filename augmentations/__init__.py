@@ -54,13 +54,16 @@ def get_aug(aug_cfg, train=True):
             augmentation = TwoCropsTransform(SimCLRTransform(**aug_cfg.params))
 
         elif name == 'byol':
-            augmentation = TwoCropsTransform(BYOLTransform(**aug_cfg.params))
+            augmentation =(TwoCropsTransformBYOLTransform(**aug_cfg.params))
 
         elif name == 'supcon':
             augmentation = TwoCropsTransform(SupConTransform(**aug_cfg.params))
 
         elif name == 'clsa':
             augmentation = Multi_Fixtransform(**aug_cfg.params)
+
+        elif name == 'single_simclr':
+            augmentation = SimCLRTransform(**aug_cfg.params)
 
         else:
             raise NotImplementedError

@@ -11,7 +11,7 @@ from datasets import get_dataset
 from augmentations import get_aug
 from losses import get_criterion
 from optimizers import get_optimizer, get_scheduler
-from tools import get_args, Logger, knn_monitor
+from tools import get_args, Logger, knn_monitor, AverageMeter
 from trainer import Trainer
 
 def main(args):
@@ -39,6 +39,9 @@ def main(args):
         batch_size=args.train.batch_size,
         **args.dataloader_kwargs
     )
+
+    print(train_loader.dataset.classes)
+    print(val_loader.dataset.class_to_idx)
 
     model = get_model(model_cfg=args.model)
     scaler = torch.cuda.amp.GradScaler()
@@ -100,32 +103,129 @@ def main(args):
     # Start training
     global_progress = tqdm(range(start_epoch, args.train.stop_epoch), initial=start_epoch, total=args.train.stop_epoch-1, desc='Training')
 
-
-    trainer = Trainer(train_loader=train_loader, model=model, scaler=scaler,
-                    criterion=criterion, optimizer=optimizer, scheduler=scheduler, 
-                    logger=logger, args=args)
+    metric_meter = {
+        'train_loss': AverageMeter('train_loss', ':.4e'),
+        'train_acc': AverageMeter('train_acc', ':.2f'),
+        'val_loss': AverageMeter('val_loss', ':.4e'),
+        'val_acc': AverageMeter('val_acc', ':.2f')
+    }
+    for m in args.train.metrics:
+        metric_meter[m] = AverageMeter(m, ':.2f')
 
     for epoch in global_progress:
 
         # Training
-        metrics = trainer.train(epoch)
-        # break
+        model.train()
 
-        loss = metrics['loss_avg']
-        
+        for k, meter in metric_meter.items():
+            metric_meter[k].reset()
+
+        for batch_idx, (inputs, targets) in enumerate(train_loader):
+            batch_size = targets.shape[0]
+            
+            # Runs the forward pass with autocasting.
+            with torch.autocast(device_type=args.device, dtype=torch.float16):
+                batch_size = targets.shape[0]
+
+                inputs = inputs.to(args.device)
+                targets = targets.to(args.device)
+
+                # compute output
+                preds = model(inputs)
+                loss = criterion(preds, targets)
+
+                data_dict = {
+                    'train_loss': loss
+                }
+
+                labels = torch.argmax(torch.softmax(preds, dim=1), dim=1)
+                data_dict['train_acc'] = torch.sum(torch.eq(labels, targets)) / batch_size * 100.00
+
+                for m in args.train.metrics:
+                    pass
+
+                loss = data_dict['train_loss'] / args.train.iters_to_accumulate
+                # print(loss)
+                # break
+
+            scaler.scale(loss).backward()
+
+            if (batch_idx + 1) % args.train.iters_to_accumulate == 0:
+                scaler.step(optimizer)
+                scaler.update()
+
+                if scheduler is not None:
+                    scheduler.step()
+
+                optimizer.zero_grad()
+
+            # update metric meters
+            for key, value in data_dict.items():
+                # convert Tensor to value
+                if isinstance(value, torch.Tensor):
+                    data_dict[key] = value.item()
+
+                if key in metric_meter.keys():
+                    # print(key, value, batch_size)
+                    metric_meter[key].update(value, n=batch_size)
+
+            # update visual training infor
+            data_dict['lr'] = optimizer.param_groups[0]['lr']
+            logger.update_scalers(data_dict)
+
+
+        # Evaluation
+        model.eval()
+
+        for batch_idx, (inputs, targets) in enumerate(val_loader):
+            batch_size = targets.shape[0]
+
+            with torch.no_grad():
+                inputs = inputs.to(args.device)
+                targets = targets.to(args.device)
+
+                # compute output
+                preds = model(inputs)
+                loss = criterion(preds, targets)
+
+                labels = torch.argmax(torch.softmax(preds, dim=1), dim=1)
+                acc = torch.sum(torch.eq(labels, targets)) / batch_size * 100.00
+
+                data_dict = {
+                    'val_loss': loss,
+                    'val_acc': acc
+                }
+
+                for m in args.train.metrics:
+                    pass
+
+            
+            # update metric meters
+            for key, value in data_dict.items():
+                # convert Tensor to value
+                if isinstance(value, torch.Tensor):
+                    data_dict[key] = value.item()
+
+                if key in metric_meter.keys():
+                    # print(key, value, batch_size)
+                    metric_meter[key].update(value, n=batch_size)
+            
         epoch_dict = dict()
+        for key, meter in metric_meter.items():
+            epoch_dict[key] = meter.avg
+        # break
+        
         if args.train.knn_monitor and (epoch + 1) % args.train.knn_interval == 0:
             accuracy = knn_monitor(model.backbone, memory_loader, val_loader, args.device,
                             k=min(args.train.knn_k, len(memory_loader.dataset)),
                             hide_progress=args.hide_progress)
             
-            metrics['knn_acc'] = accuracy
             epoch_dict['knn_acc'] = accuracy
 
         epoch_dict['epoch'] = epoch
 
         # Display
-        global_progress.set_postfix(metrics)
+        global_progress.set_postfix(epoch_dict)
         logger.update_scalers(epoch_dict)
 
         # Save the checkpoint

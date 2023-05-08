@@ -8,6 +8,7 @@ from .simtriplet import SimTriplet
 from .byol import BYOL
 from .supcon import SupCon
 from .CLSA import CLSA
+from .supervised import Supervised
 
 def get_backbone(backbone, castrate=True):           #lq debug
     backbone = models.__dict__[backbone]()
@@ -39,6 +40,9 @@ def get_model(model_cfg):
 
     elif model_cfg.name == 'clsa':
         model = CLSA(backbone=get_backbone(backbone=model_cfg.backbone), **model_cfg.params)
+
+    elif model_cfg.name == 'supervised':
+        model = Supervised(backbone=get_backbone(backbone=model_cfg.backbone), **model_cfg.params)
 
     elif model_cfg.name == 'swav':
         raise NotImplementedError

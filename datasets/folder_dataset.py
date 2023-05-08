@@ -37,7 +37,9 @@ def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:
     if not classes:
         raise FileNotFoundError(f"Couldn't find any class folder in {directory}.")
 
-    class_to_idx = {cls_name: i for i, cls_name in enumerate(os.listdir(directory))}
+    cancer_lst = os.listdir(directory)
+    cancer_lst.sort()
+    class_to_idx = {cls_name: i for i, cls_name in enumerate(cancer_lst)}
     return classes, class_to_idx
 
 

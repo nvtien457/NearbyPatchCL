@@ -1,4 +1,4 @@
-name: Tien_SupCon0247_10_256
+name: Tien_SupCon0_full_256
 
 model:
   name: supcon
@@ -10,8 +10,8 @@ model:
 dataset:
   name: CATCH
   params:
-    name: 10
-    nearby: [0, 2, 4, 7]
+    name: full
+    nearby: [0]
 
 aug:
   name: supcon
@@ -19,9 +19,9 @@ aug:
     image_size: 128
 
 train:
-  batch_size: 64
-  iters_to_accumulate: 4
-  stop_epoch: 150
+  batch_size: 128
+  iters_to_accumulate: 2
+  stop_epoch: 400
   num_epochs: 400
   save_interval: 5
   knn_monitor: True
@@ -50,27 +50,27 @@ train:
       constant_predictor_lr: False
 
 eval:
-  batch_size: 256
+  batch_size: 512
   num_epochs: 30
   fold: 5
-  eval_from: ../checkpoints/Tien_SupCon07_10_256/ckpt_049.pth
-  name: e50_p10
-  dataset: 10
+  eval_from: ../checkpoints/Tien_SupCon_10_256/ckpt_best_099.pth
+  name: 0_e100_p100
+  dataset: 100
 
   optimizer:
     name: sgd
     params:
-      lr: 0.1
+      lr: 0.005
       momentum: 0.9
       weight_decay: 0
   scheduler:
     name: lr_scheduler
     params:
       warmup_epochs: 10
-      warmup_lr: 0.01
-      final_lr: 0.0001
+      warmup_lr: 0.001
+      final_lr: 0.00001
 
-seed: 11
+seed: 19
 num_workers: 4
 tensorboard: True
 matplotlib: True
@@ -78,5 +78,5 @@ matplotlib: True
 
 resume:
   status: True
-  ckpt: ../checkpoints/Tien_SupCon0247_10_256/ckpt_099.pth
-  event: ../logs/in-progress_Tien_SupCon0247_10_256_0505140919/events.out.tfevents.1683295759.selab4
+  ckpt: ../checkpoints/Tien_SupCon0_20_256/ckpt_best_274.pth
+  event: ../logs/completed_Tien_SupCon0_20_256_0508033246/events.out.tfevents.1683516766.selab2
