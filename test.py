@@ -204,7 +204,9 @@ for subset in os.listdir('../CATCH/FINETUNE/TEST_SET'):
     compare = np.sum(one_hot_pred * one_hot_true, axis=0) / np.sum(one_hot_true, axis=0)
 
     for i, c in enumerate(dataset.classes):
-        results[c] = compare[i]
+        if c not in results.keys():
+            results[c] = []
+        results[c].append(compare[i])
 
     print('Class acc:', compare)
 
