@@ -80,6 +80,7 @@ def main(args):
 
     start_epoch = 0
     best_loss = 99999999
+    best_val_acc = 0
     logger = Logger(log_dir=args.log_dir, tensorboard=args.tensorboard, matplotlib=args.matplotlib)
 
     if args.resume.status:
@@ -90,9 +91,9 @@ def main(args):
 
         start_epoch = checkpoint['epoch'] + 1
         optimizer.load_state_dict(checkpoint['optimizer'])
-        # scheduler.load_state_dict(checkpoint['scheduler'])
-        scheduler.iter = start_epoch * iter_per_epoch
-        # best_loss = checkpoint['best_loss']
+        scheduler.load_state_dict(checkpoint['scheduler'])
+        # scheduler.iter = start_epoch * iter_per_epoch
+        best_loss = checkpoint['best_loss']
 
         if args.resume.event is not None:
             logger.load_event(args.resume.event, checkpoint['epoch'])
@@ -230,6 +231,13 @@ def main(args):
 
         # Save the checkpoint
         filepath = os.path.join(args.ckpt_dir, 'ckpt_{:03d}.pth'.format(epoch))
+
+        if loss < best_loss:
+            best_loss = loss
+
+        if metric_meter['val_acc'].avg > best_val_acc:
+            best_val_acc = metric_meter['val_acc'].avg
+
         checkpoint = {
             'backbone': args.model.backbone,
             'state_dict': model.state_dict(),
@@ -237,12 +245,16 @@ def main(args):
             'scheduler': scheduler.state_dict(),
             'epoch': epoch,
             'loss': loss,
-            'best_loss': best_loss
+            'best_loss': best_loss,
+            'best_val_acc': best_val_acc
         }
 
-        if loss < best_loss:
-            best_loss = loss
-            checkpoint['best_loss'] = best_loss
+        # if loss < best_loss:
+        #     best_loss = loss
+        #     checkpoint['best_loss'] = best_loss
+        #     filepath = filepath.replace('ckpt_', 'ckpt_best_')
+        #     torch.save(checkpoint, filepath)
+        if metric_meter['val_acc'].avg >= best_val_acc:
             filepath = filepath.replace('ckpt_', 'ckpt_best_')
             torch.save(checkpoint, filepath)
 

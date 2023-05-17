@@ -15,13 +15,14 @@ import time, os, copy, argparse
 import multiprocessing
 from matplotlib import pyplot as plt
 # from model import *
+import sklearn
 from sklearn import preprocessing
 from sklearn.metrics import confusion_matrix, f1_score, balanced_accuracy_score, ConfusionMatrixDisplay
 from torchvision.models import resnet50, resnet18
 
-FOLDER_NAME = 'Tien_SupCon_10_256'
-FINETUNE_NAME = 'finetune_0_e100_p100'
-MODEL   = f"../checkpoints/{FOLDER_NAME}/ckpt_best_099.pth"
+FOLDER_NAME = 'Tien_2B-2Neg_SupCon0_20_256'
+FINETUNE_NAME = 'finetune_e275_p1'
+MODEL   = f"../checkpoints/{FOLDER_NAME}/ckpt_274.pth"
 CLASSI0 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_0.pth"
 CLASSI1 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_1.pth"
 CLASSI2 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_2.pth"
@@ -57,7 +58,7 @@ image_transforms = {
 bs = 128
 # Number of workers
 # num_cpu = multiprocessing.cpu_count()
-num_cpu = 4
+num_cpu = 1
 # num_cpu = 0
 
 # Print the train and validation data sizes
@@ -105,6 +106,7 @@ results = {
     'f1': [],
     'balanced_acc': []
 }
+
 for subset in os.listdir('../CATCH/FINETUNE/TEST_SET'):
     directory = os.path.join('../CATCH/FINETUNE/TEST_SET', subset)
     dataset = ImageFolder(root=directory, transform=image_transforms['valid'])
@@ -189,8 +191,25 @@ for subset in os.listdir('../CATCH/FINETUNE/TEST_SET'):
     results['f1'].append(f1)
     results['balanced_acc'].append(balance_acc)
 
+    # Calculate acc for each class
+    one_hot_pred = np.eye(num_classes)[np.array(pred, dtype=int).reshape(-1)]
+    one_hot_true = np.eye(num_classes)[np.array(true, dtype=int).reshape(-1)]
+
+    # print(one_hot_pred[:5])
+    # print(one_hot_true[:5])
+    # print((one_hot_pred * one_hot_true)[:5])
+    # print(np.sum(one_hot_pred * one_hot_true, axis=0))
+    # print(np.sum(one_hot_true, axis=0))
+
+    compare = np.sum(one_hot_pred * one_hot_true, axis=0) / np.sum(one_hot_true, axis=0)
+
+    for i, c in enumerate(dataset.classes):
+        results[c] = compare[i]
+
+    print('Class acc:', compare)
+
 
 df = pd.DataFrame(results)
 print(df)
 
-df.to_csv(f'../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/test_result.csv', index=False)
+df.to_csv(f'../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/test_result_.csv', index=False)

@@ -1,5 +1,5 @@
 python train_linear.py \
-    -c ./configs/SupCon.yaml \
+    -c ./configs/SupCon0_finetune.yaml \
     --ckpt_dir ../checkpoints \
     --log_dir ../logs \
     --data_dir ../CATCH \

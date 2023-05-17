@@ -44,7 +44,7 @@ class Logger(object):
             self.plotter.update(ordered_dict)
             self.plotter.save(os.path.join(self.log_dir, self.file))
 
-    def load_event(self, event:str, epoch:int, iters_per_epoch:int):
+    def load_event(self, event:str, epoch:int):
         '''
         Load history log
         Parameter:
@@ -72,6 +72,7 @@ class Logger(object):
             elif step < 1:
                 step = num_epochs // len(v)
                 self.data_dict[k] = v[:((epoch+1) // step)]
+            # print(k, len(self.data_dict[k]))
 
         if self.plotter: 
           for k, v in self.data_dict.items():

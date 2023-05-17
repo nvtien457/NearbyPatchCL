@@ -1,5 +1,5 @@
 python train_unsupervised.py \
-    -c ./configs/SupCon07.yaml \
+    -c ./configs/SimCLR_unsup.yaml \
     --ckpt_dir ../checkpoints \
     --log_dir ../logs \
     --data_dir ../CATCH \

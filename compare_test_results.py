@@ -3,8 +3,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 csv_path = {
-    '0': '/home/nvtien/ir1s/Skin-Cancer/checkpoints/Tien_SupCon_10_256/finetune_0_e100_p100/test_result.csv',
-    '07': '/home/nvtien/ir1s/Skin-Cancer/checkpoints/Tien_SupCon07_10_256/finetune_e100_p100/test_result.csv'
+    '20_e275_1%': '/home/nvtien/ir1s/Skin-Cancer/checkpoints/Tien_2B-2Neg_SupCon0_20_256/finetune_e275_p1/test_result.csv',
+    '20_e275_100%': '/home/nvtien/ir1s/Skin-Cancer/checkpoints/Tien_2B-2Neg_SupCon0_20_256/finetune_e275_p100/test_result.csv',
+    '10_e150_1%': '/home/nvtien/ir1s/Skin-Cancer/checkpoints/Tien_2B-2Neg_SupCon0_10_256/finetune_e150_p1/test_result.csv',
+    '10_e150_100%': '/home/nvtien/ir1s/Skin-Cancer/checkpoints/Tien_2B-2Neg_SupCon0_10_256/finetune_e150_p100/test_result.csv'
 }
 
 total_df = []

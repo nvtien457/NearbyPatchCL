@@ -1,4 +1,4 @@
-name: Tien_SimCLR_20_256
+name: T_SimCLR_20_256
 
 model:
   name: simclr
@@ -19,9 +19,9 @@ aug:
 
 train:
   batch_size: 256
-  iters_to_accumulate: 2
-  stop_epoch: 200
-  num_epochs: 250
+  iters_to_accumulate: 1
+  stop_epoch: 275
+  num_epochs: 400
   save_interval: 5
   knn_monitor: True
   knn_interval: 5
@@ -34,13 +34,11 @@ train:
   metrics: ['acc_1']
 
   optimizer:
-    name: lars_simclr
+    name: sgd
     params:
-      lr: 0.1
+      lr: 0.3
       momentum: 0.9
-      weight_decay: 0.000015
-      trust_coef: 0.001
-      exclude_bias_from_adaption: True
+      weight_decay: 0.0001
       
   scheduler:
     name: lr_scheduler
@@ -71,12 +69,12 @@ eval:
       warmup_lr: 0.001
       final_lr: 0.00001
 
-seed: 12
-num_workers: 2
+seed: 67
+num_workers: 4
 tensorboard: True
 matplotlib: True
 
 resume:
-  status: False
-  ckpt: ../checkpoints/Tien_SimCLR_20_512/ckpt_074.pth
-  event: ../logs/in-progress_Tien_SimCLR_20_512_0424163358/events.out.tfevents.1682354038.selab3
+  status: True
+  ckpt: ../checkpoints/T_SimCLR_20_256/ckpt_best_215.pth
+  event: ../logs/in-progress_T_SimCLR_20_256_0516045904/events.out.tfevents.1684213144.selab4

@@ -127,35 +127,36 @@ def get_args():
     vars(args.model)['params'] = model_params
 
 
-    # criterion.params
-    if args.train.criterion.params == None:
-        vars(args.train.criterion)['params'] = dict()
-    else:
-        criterion_params = dict()
-        for k, v in args.train.criterion.params.__dict__.items():
-            criterion_params[k] = v
-        vars(args.train.criterion)['params'] = criterion_params
+    if args.train is not None:
+        # criterion.params
+        if args.train.criterion.params == None:
+            vars(args.train.criterion)['params'] = dict()
+        else:
+            criterion_params = dict()
+            for k, v in args.train.criterion.params.__dict__.items():
+                criterion_params[k] = v
+            vars(args.train.criterion)['params'] = criterion_params
 
 
-    # optimizer.params
-    if args.train.optimizer.params == None:
-        vars(args.train.optimizer)['params'] = dict()
-    else:
-        optimizer_params = dict()
-        for k, v in args.train.optimizer.params.__dict__.items():
-            optimizer_params[k] = v
-        vars(args.train.optimizer)['params'] = optimizer_params
+        # optimizer.params
+        if args.train.optimizer.params == None:
+            vars(args.train.optimizer)['params'] = dict()
+        else:
+            optimizer_params = dict()
+            for k, v in args.train.optimizer.params.__dict__.items():
+                optimizer_params[k] = v
+            vars(args.train.optimizer)['params'] = optimizer_params
 
-    # scheduler.params
-    if args.train.scheduler.params == None:
-        vars(args.train.scheduler)['params'] = dict()
-    else:
-        scheduler_params = dict()
-        for k, v in args.train.scheduler.params.__dict__.items():
-            scheduler_params[k] = v
-        scheduler_params['base_lr'] = optimizer_params['lr']
-        scheduler_params['num_epochs'] = args.train.num_epochs
-        vars(args.train.scheduler)['params'] = scheduler_params
+        # scheduler.params
+        if args.train.scheduler.params == None:
+            vars(args.train.scheduler)['params'] = dict()
+        else:
+            scheduler_params = dict()
+            for k, v in args.train.scheduler.params.__dict__.items():
+                scheduler_params[k] = v
+            scheduler_params['base_lr'] = optimizer_params['lr']
+            scheduler_params['num_epochs'] = args.train.num_epochs
+            vars(args.train.scheduler)['params'] = scheduler_params
 
 
     if args.eval is not None:
