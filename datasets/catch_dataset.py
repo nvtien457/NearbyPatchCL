@@ -25,11 +25,14 @@ class CATCHDataset(torch.utils.data.Dataset):
         if name not in available_dataset:
             raise ValueError(f'Folder dataset "{name}" not in /data')
         
+        self.random_nearby_index = False
         if isinstance(nearby, int):     nearby = [nearby]
         if len(nearby) > 0:
             for i in nearby:
                 if i < 0 or i > 8:
                     raise ValueError('nearby {} out of range [0, 8]'.format(nearby))
+        else:
+            self.random_nearby_index = True
             
         self.data_dir = data_dir
         self.nearby_indices = nearby
@@ -69,6 +72,9 @@ class CATCHDataset(torch.utils.data.Dataset):
         origin_image = Image.open(image_path).convert('RGB')
         if self.transform:
             origin_image = self.transform(origin_image)
+
+        if self.random_nearby_index:
+            self.nearby_indices = [random.choice([0, 2, 3, 4, 5, 6, 7, 8])]
 
         nearby_image_path = image_path.replace('_SET', '_SET_NEAR')
         nearby_images = []

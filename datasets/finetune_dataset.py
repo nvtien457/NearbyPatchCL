@@ -36,7 +36,8 @@ class FinetuneDataset(torch.utils.data.Dataset):
                     self.missing_image_path.append(image_path)
             f.close()
             
-        print('Missing images:', self.missing_image_path)
+        print('Missing images:', len(self.missing_image_path))
+        # ../CATCH/FINETUNE/VAL_SET/Dermis/Plasmacytoma_31_1_99551.0_22998.0.jpg
 
     def __getitem__(self, idx):
         image_path = self.list_image_path[idx]

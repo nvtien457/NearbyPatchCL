@@ -187,7 +187,7 @@ def main(args):
 
             f1 = f1_score(true_label_for_f1, pred_label_for_f1, average='macro')
             balance_acc = balanced_accuracy_score(true_label_for_f1, pred_label_for_f1)
-            global_progress.set_postfix({'Epoch': epoch, 'Accuracy': acc_meter.avg * 100, 'F1-score': f1, 'Balanced_accuracy': balance_acc})
+            global_progress.set_postfix({'Epoch': epoch, 'val_loss': loss_meter.avg, 'val_acc': acc_meter.avg * 100, 'F1-score': f1, 'Balanced_accuracy': balance_acc})
             logger.update_scalers({
                 'val_loss': loss_meter.avg,
                 'val_acc': acc_meter.avg * 100,

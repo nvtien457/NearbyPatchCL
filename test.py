@@ -20,9 +20,9 @@ from sklearn import preprocessing
 from sklearn.metrics import confusion_matrix, f1_score, balanced_accuracy_score, ConfusionMatrixDisplay
 from torchvision.models import resnet50, resnet18
 
-FOLDER_NAME = 'Tien_2B-2Neg_SupCon0_20_256'
-FINETUNE_NAME = 'finetune_e275_p1'
-MODEL   = f"../checkpoints/{FOLDER_NAME}/ckpt_274.pth"
+FOLDER_NAME = 'Tien_2B-2Neg_SupCon0_10_256'
+FINETUNE_NAME = 'finetune_e150_p1'
+MODEL   = f"../checkpoints/{FOLDER_NAME}/ckpt_best_149.pth"
 CLASSI0 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_0.pth"
 CLASSI1 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_1.pth"
 CLASSI2 = f"../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/fold_2.pth"
@@ -115,7 +115,7 @@ for subset in os.listdir('../CATCH/FINETUNE/TEST_SET'):
 
     # Create iterators for data loading
     dataloader = data.DataLoader(dataset, batch_size=bs, shuffle=True,
-                                num_workers=num_cpu, pin_memory=True, drop_last=True)
+                                num_workers=num_cpu, pin_memory=True, drop_last=False)
 
     # Number of classes
     num_classes = len(dataset.classes)
@@ -132,13 +132,15 @@ for subset in os.listdir('../CATCH/FINETUNE/TEST_SET'):
     pred = []
     true = []
     for inputs, labels in tqdm(dataloader):
+        b = labels.shape[0]
+
         inputs = inputs.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
 
         # forward
         # outputs = model(inputs)
         # _, preds = torch.max(outputs, 1)
-        preds = np.zeros(bs)
+        preds = np.zeros(b)
         feature = model(inputs)
         out_prob0 = np.array(classifier0(feature).detach().cpu())
         out_prob1 = np.array(classifier1(feature).detach().cpu())
@@ -146,7 +148,7 @@ for subset in os.listdir('../CATCH/FINETUNE/TEST_SET'):
         out_prob3 = np.array(classifier3(feature).detach().cpu())
         out_prob4 = np.array(classifier4(feature).detach().cpu())
 
-        for pred_i in range(bs):
+        for pred_i in range(b):
             norm_prob_0 = preprocessing.normalize([out_prob0[pred_i]])
             norm_prob_1 = preprocessing.normalize([out_prob1[pred_i]])
             norm_prob_2 = preprocessing.normalize([out_prob2[pred_i]])
@@ -214,4 +216,4 @@ for subset in os.listdir('../CATCH/FINETUNE/TEST_SET'):
 df = pd.DataFrame(results)
 print(df)
 
-df.to_csv(f'../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/test_result_.csv', index=False)
+df.to_csv(f'../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/test_result.csv', index=False)

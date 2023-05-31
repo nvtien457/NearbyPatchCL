@@ -3,6 +3,7 @@ from .simclr_aug import SimCLRTransform
 from .byol_aug import BYOLTransform
 from .supcon_aug import SupConTransform
 from .Multi_FixTransform import Multi_Fixtransform
+from .barlow_twins_aug import BarlowTwinsTransform
 
 import torchvision.transforms as T
 
@@ -54,7 +55,7 @@ def get_aug(aug_cfg, train=True):
             augmentation = TwoCropsTransform(SimCLRTransform(**aug_cfg.params))
 
         elif name == 'byol':
-            augmentation =(TwoCropsTransformBYOLTransform(**aug_cfg.params))
+            augmentation = (TwoCropsTransform(BYOLTransform(**aug_cfg.params)))
 
         elif name == 'supcon':
             augmentation = TwoCropsTransform(SupConTransform(**aug_cfg.params))
@@ -64,6 +65,9 @@ def get_aug(aug_cfg, train=True):
 
         elif name == 'single_simclr':
             augmentation = SimCLRTransform(**aug_cfg.params)
+
+        elif name == 'barlow_twins':
+            augmentation = BarlowTwinsTransform(**aug_cfg.params)
 
         else:
             raise NotImplementedError

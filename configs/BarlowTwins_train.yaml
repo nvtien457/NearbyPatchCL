@@ -1,27 +1,27 @@
-name: Tien_SupConRandom_10_256
+name: BarlowTwins_2x128_20_256
 
 model:
-  name: supcon
+  name: barlow_twins
   backbone: resnet50
+  castrate: True
   params:
-    head: mlp
-    feat_dim: 128
+    projector: '128-128'
+    lambd: 0.0051
 
 dataset:
   name: CATCH
   params:
-    name: 10
-    nearby: []
+    name: 20
 
 aug:
-  name: supcon
+  name: barlow_twins
   params:
     image_size: 128
 
 train:
-  batch_size: 128
-  iters_to_accumulate: 2
-  stop_epoch: 150
+  batch_size: 256
+  iters_to_accumulate: 1
+  stop_epoch: 275
   num_epochs: 400
   save_interval: 5
   knn_monitor: True
@@ -29,7 +29,7 @@ train:
   knn_k: 200
 
   criterion:
-    name: supcon
+    name: NT-Xent
     params:
       temperature: 0.07
   metrics: ['acc_1']
@@ -51,13 +51,12 @@ train:
 
 eval: None
 
-seed: 48
+seed: 13
 num_workers: 4
 tensorboard: True
 matplotlib: True
 
-
 resume:
-  status: False
-  ckpt: ../checkpoints/Tien_2B-2Neg_SupCon0_20_256/ckpt_best_250.pth
-  event: ../logs/in-progress_Tien_2B-2Neg_SupCon0_20_256_0514131244/events.out.tfevents.1684069964.selab3
+  status: True
+  ckpt: ../checkpoints/BarlowTwins_2x128_20_256/ckpt_best_205.pth
+  event: ../logs/in-progress_BarlowTwins_2x128_20_256_0530055100/events.out.tfevents.1685425861.selab4

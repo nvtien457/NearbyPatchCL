@@ -1,60 +1,59 @@
-name: BYOL_CIFAR10_100
+name: BYOL_10_256
 
 model:
   name: byol
-  backbone: resnet18
-  param:
+  backbone: resnet50
+  params:
     in_dim: 2048
     hidden_dim: 4096
-    out_dim: 256
+    out_dim: 128
     m: 0.996
 
 dataset:
-  name: cifar10
-  image_size: 32
-  num_workers: 1
+  name: CATCH
+  params:
+    name: 20
 
 aug:
   name: byol
-  param:
-    size: 224
+  params:
+    image_size: 128
 
 train:
-  batch_size: 128
-  iters_to_accumulate: 32 
-  train_dir: ./data
-  num_epochs: 15
-  nodes: 1
-
-  criterion:
-    name: neg-cosine
-    param:
-      version: simplified
-  metrics: ['acc@1', 'acc@5']
-
-  optimizer:
-    name: lars
-    param:
-      lr: 0.4
-      momentum: 0.9
-      weight_decay: 0.0000015
-      eta: 0.001
-      
-  scheduler:
-    name: lr_scheduler
-    param:
-      warmup_epochs: 10
-      warmup_lr: 0.0001
-      final_lr: 0.00001
-
+  batch_size: 256
+  iters_to_accumulate: 1
+  stop_epoch: 150
+  num_epochs: 400
+  save_interval: 5
   knn_monitor: True
   knn_interval: 5
   knn_k: 200
-  save_interval: 5
+
+  criterion:
+    name: neg-cosine
+    params:
+      version: simplified
+  metrics: ['acc_1']
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 0.05
+      momentum: 0.9
+      weight_decay: 0.0001
+      
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 10
+      warmup_lr: 0.01
+      final_lr: 0.0001
+      constant_predictor_lr: False
 
 eval: None
 
-seed: None
+seed: 13
+num_workers: 4
 tensorboard: True
 matplotlib: True
 

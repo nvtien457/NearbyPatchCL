@@ -9,6 +9,7 @@ from .byol import BYOL
 from .supcon import SupCon
 from .CLSA import CLSA
 from .supervised import Supervised
+from .barlow_twins import BarlowTwins
 
 def get_backbone(backbone, castrate=True):           #lq debug
     backbone = models.__dict__[backbone]()
@@ -37,6 +38,9 @@ def get_model(model_cfg):
 
     elif model_cfg.name == 'supcon':
         model = SupCon(get_backbone(backbone=model_cfg.backbone), **model_cfg.params)
+
+    elif model_cfg.name == 'barlow_twins':
+        model = BarlowTwins(backbone=get_backbone(backbone=model_cfg.backbone), **model_cfg.params)
 
     elif model_cfg.name == 'clsa':
         model = CLSA(backbone=get_backbone(backbone=model_cfg.backbone), **model_cfg.params)

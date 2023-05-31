@@ -1,4 +1,4 @@
-name: T_SimCLR_20_256
+name: SimCLR_20_2048
 
 model:
   name: simclr
@@ -19,10 +19,10 @@ aug:
 
 train:
   batch_size: 256
-  iters_to_accumulate: 1
+  iters_to_accumulate: 8
   stop_epoch: 275
   num_epochs: 400
-  save_interval: 5
+  save_interval: 1
   knn_monitor: True
   knn_interval: 5
   knn_k: 200
@@ -36,9 +36,9 @@ train:
   optimizer:
     name: sgd
     params:
-      lr: 0.3
+      lr: 0.2
       momentum: 0.9
-      weight_decay: 0.0001
+      weight_decay: 0.000001
       
   scheduler:
     name: lr_scheduler
@@ -47,34 +47,13 @@ train:
       warmup_lr: 0.01
       final_lr: 0.0001
       constant_predictor_lr: False
-
-eval:
-  batch_size: 512
-  num_epochs: 30
-  fold: 5
-  eval_from: ../checkpoints/Tien_SimCLR_20_512/ckpt_099.pth
-  name: e100_p100
-  dataset: 100
-
-  optimizer:
-    name: sgd
-    params:
-      lr: 0.005
-      momentum: 0.9
-      weight_decay: 0
-  scheduler:
-    name: lr_scheduler
-    params:
-      warmup_epochs: 10
-      warmup_lr: 0.001
-      final_lr: 0.00001
-
-seed: 67
+eval: None
+seed: 47
 num_workers: 4
 tensorboard: True
 matplotlib: True
 
 resume:
   status: True
-  ckpt: ../checkpoints/T_SimCLR_20_256/ckpt_best_215.pth
-  event: ../logs/in-progress_T_SimCLR_20_256_0516045904/events.out.tfevents.1684213144.selab4
+  ckpt: ../checkpoints/SimCLR_20_2048/ckpt_249.pth
+  event: ../logs/in-progress_SimCLR_20_2048_0522144029/events.out.tfevents.1684766429.selab4

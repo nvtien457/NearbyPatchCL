@@ -9,6 +9,7 @@ from .byol import byol_train
 from .simtriplet import simtriplet_train
 from .supcon import supcon_train
 from .clsa import clsa_train
+from .barlow_twins import barlowtwins_train
 
 import sys
 sys.path.append('../')
@@ -52,6 +53,9 @@ class Trainer:
 
         elif args.model.name == 'clsa':
             self.train_func = clsa_train
+
+        elif args.model.name == 'barlow_twins':
+            self.train_func = barlowtwins_train
 
         else:
             raise NotImplementedError

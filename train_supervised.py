@@ -40,9 +40,6 @@ def main(args):
         **args.dataloader_kwargs
     )
 
-    print(train_loader.dataset.classes)
-    print(val_loader.dataset.class_to_idx)
-
     model = get_model(model_cfg=args.model)
     scaler = torch.cuda.amp.GradScaler()
     model = model.to(args.device)           # MUST move to cuda before load checkpoint
@@ -61,7 +58,6 @@ def main(args):
 
     optimizer = get_optimizer(optimizer_cfg=args.train.optimizer, model=model)
     scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
-    print(len(scheduler.lr_schedule))
 
     # create log & ckpt
     args.log_dir = os.path.join(args.log_dir, 'in-progress_' + args.name + '_' + datetime.now().strftime('%m%d%H%M%S'))
@@ -246,7 +242,7 @@ def main(args):
             'epoch': epoch,
             'loss': loss,
             'best_loss': best_loss,
-            'best_val_acc': best_val_acc
+            'best_val_acc': best_val_acc,
         }
 
         # if loss < best_loss:
