@@ -1,4 +1,4 @@
-name: Tien_SupervisedSGD_10_256
+name: SupervisedSGD_NewVAL_100_512
 
 model:
   name: supervised
@@ -17,10 +17,10 @@ aug:
     image_size: 128
 
 train:
-  batch_size: 256
+  batch_size: 512
   iters_to_accumulate: 1
-  stop_epoch: 80
-  num_epochs: 80
+  stop_epoch: 100
+  num_epochs: 100
   save_interval: 5
   knn_monitor: True
   knn_interval: 5
@@ -36,7 +36,7 @@ train:
     params:
       lr: 0.005
       momentum: 0.9
-      weight_decay: 0.0001
+      weight_decay: 0.00001
       
   scheduler:
     name: lr_scheduler
@@ -55,6 +55,6 @@ matplotlib: True
 
 
 resume:
-  status: True
-  ckpt: ../checkpoints/Tien_SupervisedSGD_10_256/ckpt_049.pth
-  event: ../logs/completed_Tien_SupervisedSGD_10_256_0508112849/events.out.tfevents.1683545329.selab4
+  status: False
+  ckpt: ../checkpoints/SupervisedSGD_NewVAL_100_256/ckpt_049.pth
+  event: ../logs/completed_SupervisedSGD_NewVAL_100_256_0531025737/events.out.tfevents.1685501857.selab4

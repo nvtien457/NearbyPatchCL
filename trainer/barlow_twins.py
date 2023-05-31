@@ -1,26 +1,26 @@
 import torch
 import torch.nn.functional as F
 
+from optimizers import warmup_learning_rate, adjust_learning_rate
 from tools import accuracy
 
-def byol_train(inputs, labels, model, criterion, args):
+def barlowtwins_train(inputs, labels, model, criterion, args):
     batch_size = labels.shape[0]
 
-    img0 = inputs[0][0]
-    img1 = inputs[0][1]
+    x_i = inputs[0][0]
+    x_j = inputs[0][1]
 
-    img0 = img0.to(args.device)
-    img1 = img1.to(args.device)
+    x_i = x_i.to(args.device)
+    x_j = x_j.to(args.device)
 
-    (z0, p0), (z1, p1) = model(img0, img1)
-
-    loss = criterion(p0, z1) + criterion(p1, z0)
+    # compute output
+    z_i, z_j, loss = model(x_i, x_j)
 
     result_dict = {
-        'loss': loss
+        'loss': loss,
     }
 
-    logit = torch.mm(F.normalize(z0, dim=-1), F.normalize(z1, dim=-1).T)
+    logit = torch.mm(F.normalize(z_i, dim=-1), F.normalize(z_j, dim=-1).T)
     target = torch.arange(0, batch_size, dtype=torch.long).to(args.device)
 
     for m in args.train.metrics:
@@ -28,5 +28,5 @@ def byol_train(inputs, labels, model, criterion, args):
             result_dict[m] = accuracy(logit, target, topk=(1,))[0]
         elif m == 'acc_5':
             result_dict[m] = accuracy(logit, target, topk=(5,))[0]
-
+    
     return result_dict
