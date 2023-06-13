@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 csv_path = {
-    'BT_2x128': '../checkpoints/BarlowTwins_2x128_10_256/finetune_e150_p1/test_result.csv',
-    'SupCon_0': '../checkpoints/Tien_2B-2Neg_SupCon0_10_256/finetune_e150_p1/test_result.csv',
+    '1%': '../checkpoints/Tien_2B-2Neg_SupCon0_20_256/finetune_e275_p1/test_result.csv',
+    '5%': '../checkpoints/Tien_2B-2Neg_SupCon0_20_256/finetune_e275_p5/test_result.csv',
+    '100%': '../checkpoints/Tien_2B-2Neg_SupCon0_20_256/finetune_e275_p100/test_result.csv'
 }
 
 total_df = []

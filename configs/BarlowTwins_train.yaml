@@ -1,4 +1,4 @@
-name: BarlowTwins_2x128_20_256
+name: BarlowTwins_2x128_full_256
 
 model:
   name: barlow_twins
@@ -11,7 +11,7 @@ model:
 dataset:
   name: CATCH
   params:
-    name: 20
+    name: full
 
 aug:
   name: barlow_twins
@@ -21,7 +21,7 @@ aug:
 train:
   batch_size: 256
   iters_to_accumulate: 1
-  stop_epoch: 275
+  stop_epoch: 300
   num_epochs: 400
   save_interval: 5
   knn_monitor: True
@@ -58,5 +58,5 @@ matplotlib: True
 
 resume:
   status: True
-  ckpt: ../checkpoints/BarlowTwins_2x128_20_256/ckpt_best_205.pth
-  event: ../logs/in-progress_BarlowTwins_2x128_20_256_0530055100/events.out.tfevents.1685425861.selab4
+  ckpt: ../checkpoints/BarlowTwins_2x128_20_256/ckpt_274.pth
+  event: ../logs/completed_BarlowTwins_2x128_20_256_0609234021/events.out.tfevents.1686354021.selab4

@@ -39,7 +39,14 @@ def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:
 
     cancer_lst = os.listdir(directory)
     cancer_lst.sort()
-    class_to_idx = {cls_name: i for i, cls_name in enumerate(cancer_lst)}
+    class_to_idx = {
+        'bg': 0,
+        'Tumor': 1,
+        'Dermis': 2,
+        'Subcutis': 3,
+        'Epidermis': 4,
+        'Inflamm-Necrosis': 5,
+    }
     return classes, class_to_idx
 
 

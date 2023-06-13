@@ -1,5 +1,5 @@
 python train_unsupervised.py \
-    -c ./configs/BarlowTwins_train.yaml \
+    -c ./configs/SimTriplet_unsup.yaml \
     --ckpt_dir ../checkpoints \
     --log_dir ../logs \
     --data_dir ../CATCH \
