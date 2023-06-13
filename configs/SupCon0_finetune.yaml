@@ -1,4 +1,4 @@
-name: Tien_2B-2Neg_SupCon0_10_256
+name: Tien_2B-2Neg_SupCon0_20_256
 
 model:
   name: supcon
@@ -21,29 +21,28 @@ aug:
 train: None
 
 eval:
-  batch_size: 32
+  batch_size: 512
   num_epochs: 30
   fold: 5
-  eval_from: ../checkpoints/Tien_2B-2Neg_SupCon0_10_256/ckpt_099.pth
-  name: e100_p1
-  dataset: 1
+  eval_from: ../checkpoints/Tien_2B-2Neg_SupCon0_20_256/ckpt_274.pth
+  name: e275_p50
+  dataset: 50
 
   optimizer:
     name: sgd
     params:
-      lr: 0.005
+      lr: 0.1
       momentum: 0.9
       weight_decay: 0
-      
   scheduler:
     name: lr_scheduler
     params:
       warmup_epochs: 10
       warmup_lr: 0.001
-      final_lr: 0.00001
+      final_lr: 0.001
 
 seed: 19
-num_workers: 4
+num_workers: 1
 tensorboard: True
 matplotlib: True
 

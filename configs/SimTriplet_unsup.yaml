@@ -1,4 +1,4 @@
-name: Tien_SimTriplet_10_256
+name: SimTriplet_10_256
 
 model:
   name: simtriplet
@@ -10,8 +10,7 @@ dataset:
   name: CATCH
   params:
     name: 10
-    use_nearby: True
-    patch_id: 0
+    nearby: [0]
 
 aug:
   name: moco
@@ -22,8 +21,8 @@ aug:
 train:
   batch_size: 128
   iters_to_accumulate: 2
-  stop_epoch: 200
-  num_epochs: 200
+  stop_epoch: 150
+  num_epochs: 400
   save_interval: 5
   knn_monitor: True
   knn_interval: 5
@@ -44,35 +43,19 @@ train:
   scheduler:
     name: lr_scheduler
     params:
-      warmup_epochs: 30
+      warmup_epochs: 10
       warmup_lr: 0.01
-      final_lr: 0.0005
-
-eval:
-  batch_size: 256
-  num_epochs: 30
-  fold: 5
-  eval_from: ../checkpoints/Tien_SimTriplet_10_256/ckpt_149.pth
-
-  optimizer:
-    name: sgd
-    params:
-      lr: 30
-      momentum: 0.9
-      weight_decay: 0
-  scheduler:
-    name: lr_scheduler
-    params:
-      warmup_epochs: 5
-      warmup_lr: 0.1
       final_lr: 0.0001
+      constant_predictor_lr: False
 
-seed: 47
-num_workers: 1
+eval: None
+
+seed: 17
+num_workers: 4
 tensorboard: True
 matplotlib: True
 
 resume:
-  status: True
+  status: False
   ckpt: ../checkpoints/Tien_SimTriplet_10_256/ckpt_104.pth
   event: ../logs/in-progress_Tien_SimTriplet_10_256_0418064000/events.out.tfevents.1681800000.selab3

@@ -21,7 +21,14 @@ class FinetuneDataset(torch.utils.data.Dataset):
 
         cancer_lst = os.listdir(data_dir + '/VAL_SET')
         cancer_lst.sort()
-        self.classes = {cls: i for i, cls in enumerate(cancer_lst)}
+        self.classes = {
+            'bg': 0,
+            'Tumor': 1,
+            'Dermis': 2,
+            'Subcutis': 3,
+            'Epidermis': 4,
+            'Inflamm-Necrosis': 5,
+        }
 
         for file in os.listdir(self.folder_dataset_path):   # .txt file contain path to image
             c = file.split('_')[0]

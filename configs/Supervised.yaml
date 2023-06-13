@@ -1,4 +1,4 @@
-name: SupervisedSGD_NewVAL_100_512
+name: Supervised_50_512
 
 model:
   name: supervised
@@ -9,7 +9,7 @@ model:
 dataset:
   name: finetune
   params:
-    name: 100
+    name: 50
 
 aug:
   name: single_simclr
@@ -34,16 +34,16 @@ train:
   optimizer:
     name: sgd
     params:
-      lr: 0.005
+      lr: 0.1
       momentum: 0.9
-      weight_decay: 0.00001
+      weight_decay: 0
       
   scheduler:
     name: lr_scheduler
     params:
       warmup_epochs: 10
       warmup_lr: 0.001
-      final_lr: 0.00001
+      final_lr: 0.001
       constant_predictor_lr: False
 
 eval: None

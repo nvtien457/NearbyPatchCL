@@ -1,4 +1,4 @@
-name: T_SimCLR_20_256
+name: SimCLR_20_256
 
 model:
   name: simclr
@@ -23,14 +23,14 @@ eval:
   batch_size: 512
   num_epochs: 30
   fold: 5
-  eval_from: ../checkpoints/T_SimCLR_20_256/ckpt_274.pth
+  eval_from: ../checkpoints/SimCLR_20_256/ckpt_274.pth
   name: e275_p100
   dataset: 100
 
   optimizer:
     name: sgd
     params:
-      lr: 0.005
+      lr: 0.1
       momentum: 0.9
       weight_decay: 0
   scheduler:
@@ -38,7 +38,7 @@ eval:
     params:
       warmup_epochs: 10
       warmup_lr: 0.001
-      final_lr: 0.00001
+      final_lr: 0.001
 
 seed: 19
 num_workers: 4

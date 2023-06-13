@@ -4,6 +4,7 @@ import torchvision
 from .catch_dataset import CATCHDataset
 from .finetune_dataset import FinetuneDataset
 from .folder_dataset import ImageFolder
+from .isic_dataset import ISICDataset
 
 def get_dataset(dataset_cfg, transform=None, debug_subset_size=None):
     dataset = dataset_cfg.name
