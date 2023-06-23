@@ -1,4 +1,4 @@
-name: Tien_SupConRandom_10_256
+name: SupCon0DB_20_256
 
 model:
   name: supcon
@@ -8,10 +8,10 @@ model:
     feat_dim: 128
 
 dataset:
-  name: CATCH
+  name: DBCATCH
   params:
-    name: 10
-    nearby: []
+    name: 20
+    nearby: 0
 
 aug:
   name: supcon
@@ -21,9 +21,9 @@ aug:
 train:
   batch_size: 128
   iters_to_accumulate: 2
-  stop_epoch: 150
+  stop_epoch: 275
   num_epochs: 400
-  save_interval: 5
+  save_interval: 2
   knn_monitor: True
   knn_interval: 5
   knn_k: 200
@@ -51,13 +51,13 @@ train:
 
 eval: None
 
-seed: 48
+seed: 19
 num_workers: 4
 tensorboard: True
 matplotlib: True
 
 
 resume:
-  status: False
-  ckpt: ../checkpoints/Tien_2B-2Neg_SupCon0_20_256/ckpt_best_250.pth
-  event: ../logs/in-progress_Tien_2B-2Neg_SupCon0_20_256_0514131244/events.out.tfevents.1684069964.selab3
+  status: True
+  ckpt: ../checkpoints/SupCon0DB_20_256/ckpt_249.pth
+  event: ../logs/in-progress_SupCon0DB_20_256_0618132225/events.out.tfevents.1687094545.selab4

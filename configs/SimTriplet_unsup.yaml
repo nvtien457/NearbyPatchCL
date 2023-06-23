@@ -56,6 +56,6 @@ tensorboard: True
 matplotlib: True
 
 resume:
-  status: False
-  ckpt: ../checkpoints/Tien_SimTriplet_10_256/ckpt_104.pth
-  event: ../logs/in-progress_Tien_SimTriplet_10_256_0418064000/events.out.tfevents.1681800000.selab3
+  status: True
+  ckpt: ../checkpoints/SimTriplet_10_256/ckpt_124.pth
+  event: ../logs/in-progress_SimTriplet_10_256_0613213018/events.out.tfevents.1686691818.selab4

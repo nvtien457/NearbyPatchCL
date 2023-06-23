@@ -1,4 +1,4 @@
-name: SimSiam_CIFAR10_100
+name: T_SimSiam_10_256
 
 model:
   name: simsiam
@@ -11,19 +11,19 @@ dataset:
   name: CATCH
   params:
     name: 10
+    nearby: []
 
 aug:
   name: moco
   params:
-    image_size: 128
     version: v2
+    image_size: 128
 
 train:
-  batch_size: 128
-  iters_to_accumulate: 2
-  stop_epoch: 200
-  num_epochs: 200
-  nodes: 1
+  batch_size: 256
+  iters_to_accumulate: 1
+  stop_epoch: 150
+  num_epochs: 400
   save_interval: 5
   knn_monitor: True
   knn_interval: 5
@@ -33,7 +33,7 @@ train:
     name: neg-cosine
     params:
       version: simplified
-  metrics: ['acc@1']
+  metrics: ['acc_1']
 
   optimizer:
     name: sgd
@@ -45,18 +45,19 @@ train:
   scheduler:
     name: lr_scheduler
     params:
-      warmup_epochs: 30
+      warmup_epochs: 10
       warmup_lr: 0.01
-      final_lr: 0.0005
+      final_lr: 0.0001
+      constant_predictor_lr: False
 
 eval: None
 
-seed: 47
-num_workers: 1
+seed: 23
+num_workers: 4
 tensorboard: True
 matplotlib: True
 
 resume:
-  status: False
-  ckpt: None
-  event: None
+  status: True
+  ckpt: ../checkpoints/T_SimSiam_10_256/ckpt_034.pth
+  event: ../logs/in-progress_T_SimSiam_10_256_0614030417/events.out.tfevents.1686711857.selab2

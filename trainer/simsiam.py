@@ -3,8 +3,8 @@ import torch
 import torch.nn.functional as F
 
 def simsiam_train(inputs, labels, model, criterion, args):
-    img_1 = inputs[0]
-    img_2 = inputs[1]
+    img_1 = inputs[0][0]
+    img_2 = inputs[0][1]
     batch_size = labels.shape[0]
 
     img_1 = img_1.to(args.device)
@@ -19,7 +19,7 @@ def simsiam_train(inputs, labels, model, criterion, args):
         'loss': loss
     }
     
-    output = torch.mm(F.normalize(p1, dim=-1), F.normalize(p2, dim=-1).T)
+    output = torch.mm(F.normalize(z1, dim=-1), F.normalize(z2, dim=-1).T)
     target = torch.arange(0, batch_size, dtype=torch.long).to(args.device)
 
     for m in args.train.metrics:

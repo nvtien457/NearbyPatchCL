@@ -2,6 +2,7 @@ import torch
 import torchvision
 
 from .catch_dataset import CATCHDataset
+from .db_catch_dataset import DBCATCHDataset
 from .finetune_dataset import FinetuneDataset
 from .folder_dataset import ImageFolder
 from .isic_dataset import ISICDataset
@@ -22,6 +23,8 @@ def get_dataset(dataset_cfg, transform=None, debug_subset_size=None):
     
     elif dataset == 'CATCH':
         dataset = CATCHDataset(transform=transform, **dataset_cfg.params)
+    elif dataset == 'DBCATCH':
+        dataset = DBCATCHDataset(transform=transform, **dataset_cfg.params)
 
     elif dataset == 'finetune':
         dataset = FinetuneDataset(transform=transform, **dataset_cfg.params)
