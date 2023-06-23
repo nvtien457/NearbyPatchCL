@@ -87,8 +87,8 @@ def main(args):
 
         start_epoch = checkpoint['epoch'] + 1
         optimizer.load_state_dict(checkpoint['optimizer'])
-        scheduler.load_state_dict(checkpoint['scheduler'])
-        # scheduler.iter = start_epoch * iter_per_epoch
+        # scheduler.load_state_dict(checkpoint['scheduler'])
+        scheduler.iter = start_epoch * iter_per_epoch
         best_loss = checkpoint['best_loss']
 
         if args.resume.event is not None:

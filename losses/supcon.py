@@ -238,19 +238,19 @@ class SupConLoss(nn.Module):
         thres_mask = torch.ones_like(sim_aug_nearby) * self.threshold           # 2B x N*B
         sim_aug_nearby = torch.minimum(sim_aug_nearby, thres_mask)
 
-        # print(sim_aug_aug.shape)
-        # print(sim_aug_nearby.shape)
+        # print(torch.min(sim_aug_aug), torch.max(sim_aug_aug))
+        # print(torch.min(sim_aug_nearby), torch.max(sim_aug_nearby))
 
         logit_aug_aug = torch.exp(torch.div(sim_aug_aug, self.temperature))     # 2B x 2B
         logit_aug_nearby = torch.exp(torch.div(sim_aug_nearby, self.temperature))   # 2B x N*B
 
-        # print(logit_aug_aug.shape)
-        # print(logit_aug_nearby.shape)
+        # print(torch.min(logit_aug_aug), torch.max(logit_aug_aug))
+        # print(torch.min(logit_aug_nearby), torch.max(logit_aug_nearby))
 
         neg_mask = torch.ones_like(logit_aug_aug, dtype=bool).fill_diagonal_(0)
-        for i in range(batch_size):
-            neg_mask[i, batch_size+i] = 0
-            neg_mask[batch_size+i, i] = 0
+        # for i in range(batch_size):           # cmt 2 đường chéo phụ -> 2B-1
+        #     neg_mask[i, batch_size+i] = 0
+        #     neg_mask[batch_size+i, i] = 0
         negative_samples = logit_aug_aug[neg_mask].reshape(2*batch_size, -1)    # ( 2B x (2B-2) )
 
         positive_samples_aug = torch.cat((
@@ -276,12 +276,13 @@ class SupConLoss(nn.Module):
         log_prob_aug = -torch.log(prob_aug_aug)                                 # ( 2B x 1 )
         log_prob_nearby = -torch.log(prob_aug_nearby)                           # ( 2B x N )
 
-        # print(log_prob_aug.shape)
-        # print(log_prob_nearby.shape)
+        # print(torch.min(log_prob_aug), torch.max(log_prob_aug))
+        # print(torch.min(log_prob_nearby), torch.max(log_prob_nearby))
 
         mean_log_prob = torch.div(nearby_size * log_prob_aug + torch.sum(log_prob_nearby, dim=1, keepdim=True), 2*nearby_size)  # ( 2B x 1 )
 
         # print(mean_log_prob.shape)
+        # print(torch.min(mean_log_prob), torch.max(mean_log_prob))
 
         loss = torch.sum(mean_log_prob)                       
 
