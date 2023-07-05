@@ -3,30 +3,30 @@ import torch.nn.functional as F
 
 from optimizers import warmup_learning_rate, adjust_learning_rate
 from tools import accuracy
+import random
 
 def supcon_train(inputs, labels, model, criterion, args):
     batch_size = labels.shape[0]
+    n = len(inputs[1])
 
-    img_1 = inputs[0][0]
-    img_2 = inputs[0][1]
-    nearby = inputs[1]
-    img_3 = torch.cat(nearby, dim=0)
+    img_0 = torch.cat((inputs[0][0], torch.cat([inputs[1][i][0] for i in range(len(inputs[1]))], dim=0)), dim=0).to(args.device)
+    img_1 = torch.cat((inputs[0][1], torch.cat([inputs[1][i][1] for i in range(len(inputs[1]))], dim=0)), dim=0).to(args.device)
+    labels = torch.Tensor([[i for _ in range(n+1)] for i in range(batch_size)]).flatten().to(args.device)
 
-    img_1 = img_1.to(args.device)
-    img_2 = img_2.to(args.device)
-    img_3 = img_3.to(args.device)
+    index = [i for i in range(labels.shape[0])]
+    random.shuffle(index)
 
     # compute output
-    p1 = model(img_1)
-    p2 = model(img_2)
-    p3 = model(img_3)
-    loss = criterion(p1, p2, p3)
+    f0 = model(img_0)
+    f1 = model(img_1)
+    features = torch.cat([f0.unsqueeze(1), f1.unsqueeze(1)], dim=1)
+    loss = criterion(features[index], labels[index])
 
     result_dict = {
         'loss': loss
     }
 
-    logit = torch.mm(p1, p2.T)
+    logit = torch.mm(f0[:batch_size], f1[:batch_size].T)
     target = torch.arange(0, batch_size, dtype=torch.long).to(args.device)
 
     for m in args.train.metrics:

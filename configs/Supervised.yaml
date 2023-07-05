@@ -1,4 +1,4 @@
-name: Supervised_50_512
+name: Supervised_1_512
 
 model:
   name: supervised
@@ -9,7 +9,7 @@ model:
 dataset:
   name: finetune
   params:
-    name: 50
+    name: 1
 
 aug:
   name: single_simclr

@@ -206,7 +206,7 @@ def get_args():
 
     vars(args)['dataloader_kwargs'] = {
         'drop_last': True,
-        'pin_memory': True,
+        'pin_memory': args.pin_memory,
         'num_workers': args.num_workers,
     }
 

@@ -38,6 +38,7 @@ def main(args):
         shuffle=False,
         batch_size=args.train.batch_size,
         **args.dataloader_kwargs
+       
     )
 
     model = get_model(model_cfg=args.model)
@@ -87,12 +88,13 @@ def main(args):
 
         start_epoch = checkpoint['epoch'] + 1
         optimizer.load_state_dict(checkpoint['optimizer'])
-        # scheduler.load_state_dict(checkpoint['scheduler'])
-        scheduler.iter = start_epoch * iter_per_epoch
+        scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
+        scheduler.load_state_dict(checkpoint['scheduler'])
+        # scheduler.iter = start_epoch * iter_per_epoch
         best_loss = checkpoint['best_loss']
 
         if args.resume.event is not None:
-            logger.load_event(args.resume.event, checkpoint['epoch'])
+            logger.load_event(args.resume.event, checkpoint['epoch']-1)
 
         print("=> loaded checkpoint '{}' (epoch = {}, iter = {}, loss = {})".format(args.resume.ckpt, 
                                                                                 checkpoint['epoch'], scheduler.iter, best_loss))

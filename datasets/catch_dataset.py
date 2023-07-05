@@ -92,7 +92,7 @@ class CATCHDataset(torch.utils.data.Dataset):
             if self.transform:
                 img = self.transform(img)
 
-            nearby_images.append(img[0])
+            nearby_images.append(img)
 
         return (origin_image, nearby_images), 0
         

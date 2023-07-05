@@ -1,0 +1,8 @@
+name : testing
+
+eval :
+  MODEL_PATH: ../checkpoints
+  MODEL_NAME: SimSiam_10_256
+  CHECKPOINT_NUM: 099
+  PERCENTAGE: [100,50,25,10,5,1]
+  dataset: None

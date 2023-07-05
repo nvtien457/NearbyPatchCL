@@ -10,6 +10,7 @@ from .simtriplet import simtriplet_train
 from .supcon import supcon_train
 from .clsa import clsa_train
 from .barlow_twins import barlowtwins_train
+from .barlow_twins_nearby import barlowtwins_nearby_train
 
 import sys
 sys.path.append('../')
@@ -56,7 +57,8 @@ class Trainer:
 
         elif args.model.name == 'barlow_twins':
             self.train_func = barlowtwins_train
-
+        elif args.model.name == 'barlow_twins_nearby':
+            self.train_func = barlowtwins_nearby_train
         else:
             raise NotImplementedError
 

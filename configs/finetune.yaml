@@ -1,0 +1,54 @@
+name: SupCon0DB_20_256_finetune
+
+model:
+  name: supcon
+  backbone: resnet50
+  params:
+    head: mlp
+    feat_dim: 128
+
+dataset:
+  name: CATCH
+  params:
+    name: 20
+    nearby: [0]
+
+aug:
+  name: supcon
+  params:
+    image_size: 128
+
+train: None
+
+eval:
+  resume: False
+  batch_size: 64
+  num_epochs: 30
+  fold: 5
+  eval_from: ../checkpoints/SimSiam_10_256/ckpt_099.pth
+  name: e30_p1
+  dataset: 1
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 0.2
+      momentum: 0.9
+      weight_decay: 0
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 10
+      warmup_lr: 0.001
+      final_lr: 0.003
+
+seed: 19
+num_workers: 4
+tensorboard: True
+matplotlib: True
+
+
+resume:
+  status: False
+  ckpt: ../checkpoints/Tien_2B-2Neg_SupCon0_20_256/ckpt_best_250.pth
+  event: ../logs/in-progress_Tien_2B-2Neg_SupCon0_20_256_0514131244/events.out.tfevents.1684069964.selab3

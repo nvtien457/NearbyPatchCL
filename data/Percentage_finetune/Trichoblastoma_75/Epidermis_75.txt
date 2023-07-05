@@ -1,5 +1,7 @@
 VAL_SET/Epidermis/Trichoblastoma_08_1_44761.0_75018.0.jpg
 VAL_SET/Epidermis/Trichoblastoma_08_1_44761.0_75530.0.jpg
+VAL_SET/Epidermis/Trichoblastoma_11_1_11191.0_4682.0.jpg
+VAL_SET/Epidermis/Trichoblastoma_11_1_39421.0_7595.0.jpg
 VAL_SET/Epidermis/Trichoblastoma_33_1_2671.0_45231.0.jpg
 VAL_SET/Epidermis/Trichoblastoma_33_1_3183.0_45231.0.jpg
 VAL_SET/Epidermis/Trichoblastoma_33_1_35323.0_11696.0.jpg
@@ -23,5 +25,3 @@ VAL_SET/Epidermis/Trichoblastoma_33_1_71029.0_52655.0.jpg
 VAL_SET/Epidermis/Trichoblastoma_33_1_71029.0_53167.0.jpg
 VAL_SET/Epidermis/Trichoblastoma_33_1_71541.0_53679.0.jpg
 VAL_SET/Epidermis/Trichoblastoma_33_1_72053.0_53679.0.jpg
-VAL_SET/Epidermis/Trichoblastoma_11_1_11191.0_4682.0.jpg
-VAL_SET/Epidermis/Trichoblastoma_11_1_39421.0_7595.0.jpg

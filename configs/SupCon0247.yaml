@@ -1,4 +1,4 @@
-name: Tien_SupCon0247_10_256
+name: SupCon0247_10_256
 
 model:
   name: supcon
@@ -72,11 +72,12 @@ eval:
 
 seed: 11
 num_workers: 4
+pin_memory: True
 tensorboard: True
 matplotlib: True
 
 
 resume:
-  status: True
+  status: False
   ckpt: ../checkpoints/Tien_SupCon0247_10_256/ckpt_099.pth
   event: ../logs/in-progress_Tien_SupCon0247_10_256_0505140919/events.out.tfevents.1683295759.selab4
