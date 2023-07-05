@@ -1,4 +1,4 @@
-name: SupCon0DB_20_256
+name: SupCon0SC_10_256
 
 model:
   name: supcon
@@ -8,10 +8,10 @@ model:
     feat_dim: 128
 
 dataset:
-  name: DBCATCH
+  name: SCCATCH
   params:
-    name: 20
-    nearby: 0
+    name: 10
+    nearby: [0, 2]
 
 aug:
   name: supcon
@@ -52,12 +52,12 @@ train:
 eval: None
 
 seed: 19
-num_workers: 4
+num_workers: 2
 tensorboard: True
 matplotlib: True
 
 
 resume:
-  status: True
+  status: False
   ckpt: ../checkpoints/SupCon0DB_20_256/ckpt_249.pth
   event: ../logs/in-progress_SupCon0DB_20_256_0618132225/events.out.tfevents.1687094545.selab4
