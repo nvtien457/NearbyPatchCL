@@ -34,7 +34,31 @@ class BarlowTwins(nn.Module):
         z2 = self.projector(self.backbone(y2))
 
         dim = z1.shape[1]
-
+        D= z2.size()[-1]
+        ##################################
+        # size=512
+        # z1_bn = self.bn(z1)
+        # z2_bn = self.bn(z2)
+        
+        # D= z2_bn.size()[-1]
+        # total_loss =0
+        # print(D//size)
+        # for i in range (D//size ):
+        #     for j in range( D//size):
+        #         c= z1_bn[  : ,i*size: (i+1)*size ].T @ z2_bn[ :, j*size: (j+1)*size]
+        #         c.div_(batch_size)
+        #         if i == j:
+        #             on_diag = torch.diagonal(c).add_(-1).pow_(2).sum()
+        #         else:
+        #             on_diag = self.lambd *torch.diagonal(c).pow_(2).sum()
+        #         off_diag = off_diagonal(c).pow_(2).sum()
+        #         loss = on_diag + self.lambd * off_diag 
+        #         print(loss)
+        #         total_loss += loss
+        #         del c
+        
+        ######################
+        
         # empirical cross-correlation matrix
         c = self.bn(z1).T @ self.bn(z2)
 
@@ -44,6 +68,6 @@ class BarlowTwins(nn.Module):
 
         on_diag = torch.diagonal(c).add_(-1).pow_(2).sum()
         off_diag = off_diagonal(c).pow_(2).sum()
-        loss = on_diag + self.lambd * off_diag
+        loss = (on_diag + self.lambd * off_diag)*64/D
 
         return z1, z2, loss

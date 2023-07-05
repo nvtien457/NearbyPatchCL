@@ -28,7 +28,7 @@ class DBCATCHDataset(torch.utils.data.Dataset):
         if nearby is None:
             nearby = random.choice([0, 2, 3, 4, 5, 6, 7, 8])
         self.nearby_index = nearby
-            
+           
         self.data_dir = data_dir
         self.transform = transform
         self.folder_dataset_path = os.path.join('data', name)

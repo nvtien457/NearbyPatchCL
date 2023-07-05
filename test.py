@@ -8,8 +8,7 @@ from torchvision import models, transforms
 import torch.utils.data as data
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
+
 # from nets import *
 import time, os, copy, argparse
 import multiprocessing
@@ -20,57 +19,98 @@ from sklearn import preprocessing
 from sklearn.metrics import confusion_matrix, f1_score, balanced_accuracy_score, ConfusionMatrixDisplay
 from torchvision.models import resnet50, resnet18
 
-
-FOLDER_PATH =  f"D:/DATA/model/SupCon_256/274"
-#finetune_e275_p100
-FINETUNE_NAME = 'ckpt_274_100/finetune_e30_p100_new_new'
-MODEL   = f"D:/DATA/model/SupCon_256/274/ckpt_274.pth"
-split = MODEL.split('/')
-FOLDER_PATH= MODEL.replace(f'/{split[-1]}','')
-# FOLDER_PATH =  f"D:/DATA/model/SupCon_256/149"
+import re 
+import yaml
+from yaml import load, dump
+# FOLDER_PATH =  f"D:/DATA/model/SupCon_256/274"
 # #finetune_e275_p100
-# FINETUNE_NAME = 'ckpt_best_149_50/finetune_e30_p50_new'
-# MODEL   = f"D:/DATA/model/SupCon_256/149/ckpt_best_149.pth"
-# FOLDER_PATH =  f"D:/DATA/model/SimCLR_1024/274"
-# #finetune_e275_p100
-# FINETUNE_NAME = 'ckpt_274_100/finetune_e30_p100'
-# MODEL   = f"D:/DATA/model/SimCLR_1024/274/ckpt_274.pth"
-CLASSI0 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_0.pth"
-CLASSI1 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_1.pth"
-CLASSI2 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_2.pth"
-CLASSI3 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_3.pth"
-CLASSI4 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_4.pth"
-TEST_PATH= 'E:/medical/Skin_Cancer_Detection_WSI-main/cheat/TEST_SET'
+# FINETUNE_NAME = 'ckpt_274_5/finetune_e30_p5_new'
+# MODEL   = f"D:/DATA/model/SupCon_256/274/ckpt_274.pth"
+# split= MODEL.split('/')
+# FOLDER_PATH= MODEL.replace(f'/{split[-1]}','')
+# # FOLDER_PATH =  f"D:/DATA/model/SupCon_256/149"
+# # #finetune_e275_p100
+# # FINETUNE_NAME = 'ckpt_best_149_50/finetune_e30_p50_new'
+# # MODEL   = f"D:/DATA/model/SupCon_256/149/ckpt_best_149.pth"
+# # FOLDER_PATH =  f"D:/DATA/model/SimCLR_1024/274"
+# # #finetune_e275_p100
+# # FINETUNE_NAME = 'ckpt_274_100/finetune_e30_p100'
+# # MODEL   = f"D:/DATA/model/SimCLR_1024/274/ckpt_274.pth"
+# CLASSI0 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_0.pth"
+# CLASSI1 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_1.pth"
+# CLASSI2 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_2.pth"
+# CLASSI3 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_3.pth"
+# CLASSI4 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_4.pth"
+# TEST_PATH= 'E:/medical/Skin_Cancer_Detection_WSI-main/cheat/TEST_SET'
 
-ADD= MODEL.split('/')[-3]+'_'+FINETUNE_NAME.split('/')[0]
+# ADD= MODEL.split('/')[-3]+'_'+FINETUNE_NAME.split('/')[0]
+class Namespace(object):
+    def __init__(self, somedict):
+        for key, value in somedict.items():
+            assert isinstance(key, str) and re.match("[A-Za-z_-]", key)
+            if isinstance(value, dict):
+                self.__dict__[key] = Namespace(value)
+            else:
+                if value == 'None':
+                    self.__dict__[key] = None
+                else:
+                    self.__dict__[key] = value
+    
+    def __getattr__(self, attribute):
+
+        raise AttributeError(f"Can not find {attribute} in namespace. Please write {attribute} in your config file(xxx.yaml)!")
+
+
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config-file', required=True, type=str, help="xxx.yaml")
+    parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--resume', action='store_true')
+    parser.add_argument('--debug_subset_size', type=int, default=8)
+    parser.add_argument('--download', action='store_true', help="if can't find dataset, download from web")
+    parser.add_argument('--data_dir', type=str, default='/content')
+    parser.add_argument('--log_dir', type=str)
+    parser.add_argument('--ckpt_dir', type=str)
+    parser.add_argument('--mem_dir', type=str, default='/content/TRAIN_VAL_SET')
+    parser.add_argument('--test_dir', type=str, default='/content/VAL_SET')
+    parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
+    parser.add_argument('--eval_from', type=str, default=None)
+    parser.add_argument('--hide_progress', action='store_true')
+    parser.add_argument('--mixed_precision', '-mp', action='store_true', help='Mixed precision traing')
+
+    parser.add_argument('--dist-url', default='127.0.0.1', type=str,
+                            help='url used to set up distributed training')
+    parser.add_argument('--world-size', default=-1, type=int,
+                            help='number of nodes for distributed training')
+    parser.add_argument('--multiprocessing-distributed', action='store_true',
+                            help='Use multi-processing distributed training to launch '
+                                'N processes per node, which has N GPUs. This is the '
+                                'fastest way to use PyTorch for either single node or '
+                                'multi node data parallel training')
+    parser.add_argument('--dist-backend', default='nccl', type=str,
+                            help='distributed backend')
+    parser.add_argument('--rank', default=-1, type=int,
+                            help='node rank for distributed training')
+
+    args = parser.parse_args()
+
+    with open(args.config_file, 'r') as f:
+        for key, value in Namespace(yaml.load(f, Loader=yaml.FullLoader)).__dict__.items():
+            vars(args)[key] = value
+
+    
+
+    return args
 def softmax(x):
     e = np.exp(x)
     return e / np.sum(e)
-def write_path(list_path, bool):
-    filename=''
-    if bool ==True:
-        filename='positive'
-    else:
-        filename='negative'
-    if(len(list_path)==0):
-        return 0
-    split = list_path[0].split('\\')
-            
-    RESULT_PATH = f'E:/medical/Skin_Cancer_Detection_WSI-main/cheat/RESULT/RESULT_{ADD}/{split[-3]}/{split[-2]}'
-    isExist = os.path.exists(RESULT_PATH )
-    if not isExist:
-    # Create a new directory because it does not exist
-        os.makedirs(RESULT_PATH )
-    with open(f'{RESULT_PATH}/{filename}.txt','w+') as f:
-        for path in list_path:
-            # split = path.split('\\')
-            
-            f.write(path)
-            f.write('\n')
+
             
         
     
-def main():
+def main(args):
 # Applying transforms to the data
     image_transforms = {
         'train': transforms.Compose([
@@ -88,15 +128,15 @@ def main():
                                 [0.229, 0.224, 0.225])
         ])
     }
-
-
-
-
-    # Batch size
-    bs = 32
-    # Number of workers
-    # num_cpu = multiprocessing.cpu_count()
-    num_cpu = 2
+    MODEL_PATH= args.eval.MODEL_PATH
+    MODEL_NAME= args.eval.MODEL_NAME
+    CHECKPOINT_NUM= args.eval.CHECKPOINT_NUM
+    PERCENTAGE= args.eval.PERCENTAGE
+    MODEL = f'{MODEL_PATH}/{MODEL_NAME}/ckpt_{CHECKPOINT_NUM}.pth'
+    bs = 128
+        # Number of workers
+        # num_cpu = multiprocessing.cpu_count()
+    num_cpu = 4
     # num_cpu = 0
 
     # Print the train and validation data sizes
@@ -117,175 +157,275 @@ def main():
     # model = torch.load(MODEL)
     model.eval()
     model = model.to(device)
-
-    classifier0 = torch.load(CLASSI0)
-    classifier0.eval()
-    classifier0 = classifier0.to(device)
-
-    classifier1 = torch.load(CLASSI1)
-    classifier1.eval()
-    classifier1 = classifier1.to(device)
-
-    classifier2 = torch.load(CLASSI2)
-    classifier2.eval()
-    classifier2 = classifier2.to(device)
-
-    classifier3 = torch.load(CLASSI3)
-    classifier3.eval()
-    classifier3 = classifier3.to(device)
-
-    classifier4 = torch.load(CLASSI4)
-    classifier4.eval()
-    classifier4 = classifier4.to(device)
-
-
-    results = {
-        'subset': [],
-        'f1': [],
-        'balanced_acc': []
-    }
-    total_pred=[]
-    total_true=[]
-    for subset in os.listdir(TEST_PATH):
+    for percent in PERCENTAGE:
         
-        # if subset not in ['PNST']:
-        #     continue
+        # MODEL= args.eval.MODEL
+        # FINETUNE_NAME= args.eval.FINETUNE_NAME
+        FINETUNE_NAME= f'ckpt_{CHECKPOINT_NUM}_{percent}/finetune_e30_p{percent}'
+        split= MODEL.split('/')
+        FOLDER_PATH= MODEL.replace(f'/{split[-1]}','')
+        # FOLDER_PATH =  f"D:/DATA/model/SupCon_256/149"
+        # #finetune_e275_p100
+        # FINETUNE_NAME = 'ckpt_best_149_50/finetune_e30_p50_new'
+        # MODEL   = f"D:/DATA/model/SupCon_256/149/ckpt_best_149.pth"
+        # FOLDER_PATH =  f"D:/DATA/model/SimCLR_1024/274"
+        # #finetune_e275_p100
+        # FINETUNE_NAME = 'ckpt_274_100/finetune_e30_p100'
+        # MODEL   = f"D:/DATA/model/SimCLR_1024/274/ckpt_274.pth"
+        CLASSI0 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_0.pth"
+        CLASSI1 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_1.pth"
+        CLASSI2 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_2.pth"
+        CLASSI3 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_3.pth"
+        CLASSI4 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_4.pth"
+        TEST_PATH= '../CATCH//TEST_SET'
+
+        ADD= MODEL.split('/')[-3]+'_'+FINETUNE_NAME.split('/')[0]
 
 
-        directory = os.path.join(TEST_PATH, subset)
-        dataset = ImageFolder(root=directory, transform=image_transforms['valid'])
+        # Batch size
+        # bs = 32
+        # # Number of workers
+        # # num_cpu = multiprocessing.cpu_count()
+        # num_cpu = 2
+        # # num_cpu = 0
 
-        print(f'++ {subset}:')
+        # # Print the train and validation data sizes
+        # print(MODEL)
 
-        # Create iterators for data loading
-        dataloader = data.DataLoader(dataset, batch_size=bs, shuffle=False,
-                                    num_workers=num_cpu, pin_memory=True, drop_last=False)
+        # # Set default device as gpu, if available
+        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        # Number of classes
-        num_classes = len(dataset.classes)
+        # # Load the model for testing
+        # backbone = 'resnet50'
+        # backbone = eval(f"{backbone}()")
+        # backbone.output_dim = backbone.fc.in_features
+        # backbone.fc = torch.nn.Identity()
+        # model = backbone
+        # save_dict = torch.load(MODEL, map_location='cpu')
+        # model.load_state_dict({k[9:]: v for k, v in save_dict['state_dict'].items() if k.startswith('backbone.')},
+        #                             strict=True)
+        # # model = torch.load(MODEL)
+        # model.eval()
+        # model = model.to(device)
+        checkpoint0=  torch.load(CLASSI0)
+        classifier0 = checkpoint0['classifier']
+        classifier0.eval()
+        classifier0 = classifier0.to(device)
 
-        print("Validation-set size: {}".format(len(dataset)))
+        checkpoint1=  torch.load(CLASSI1)
+        classifier1 = checkpoint1['classifier']
+        classifier1.eval()
+        classifier1 = classifier1.to(device)
+
+        checkpoint2=  torch.load(CLASSI2)
+        classifier2 = checkpoint2['classifier']
+        classifier2.eval()
+        classifier2 = classifier2.to(device)
+
+        checkpoint3=  torch.load(CLASSI3)
+        classifier3 = checkpoint3['classifier']
+        classifier3.eval()
+        classifier3 = classifier3.to(device)
+
+        checkpoint4=  torch.load(CLASSI4)
+        classifier4 = checkpoint4['classifier']
+        classifier4.eval()
+        classifier4 = classifier4.to(device)
 
 
-        since = time.time()
-        best_acc = 0.0
-
-        model.eval()  # Set model to evaluate mode
-        running_corrects = 0
-        
-        
-        #########################
-        list_path=dataloader.sampler.data_source.imgs
-        categories_list=[]
-        for path in list_path:
-            category= path[0].split('\\')[-2]
-            categories_list.append(category)
-        categories_list= list(set(categories_list))
-        #'E:/medical/Skin_Cancer_Detection_WSI-main/cheat/TEST_SET\\Histiocytoma\\bg\\Histiocytoma_06_1_101_67.jpg'
-        ##########################
-        
-        positive_list=[]
-        negative_list=[]
-        
-        pred = []
-        true = []
-        index=0
-        for inputs, labels in tqdm(dataloader):
-            inputs = inputs.to(device, non_blocking=True)
-            labels = labels.to(device, non_blocking=True)
+        results = {
+            'subset': [],
+            'f1': [],
+            'balanced_acc': []
+        }
+        total_pred=[]
+        total_true=[]
+        for subset in os.listdir(TEST_PATH):
             
-            #################################
-            # for i in range(bs):
-            #     if labels[i] != list_path[index*bs+i][1]:
-            #         print(labels[i],list_path[index*32+i][1], index)
-                    
-            # index += 1
-            ##################################
-            
-            # forward
-            # outputs = model(inputs)
-            # _, preds = torch.max(outputs, 1)
-            # preds = np.zeros(bs)
-            feature = model(inputs)
-            out_prob0 = np.array(classifier0(feature).detach().cpu())
-            out_prob1 = np.array(classifier1(feature).detach().cpu())
-            out_prob2 = np.array(classifier2(feature).detach().cpu())
-            out_prob3 = np.array(classifier3(feature).detach().cpu())
-            out_prob4 = np.array(classifier4(feature).detach().cpu())
-            
-            preds = np.zeros(len(out_prob0))
-            for pred_i in range(len(out_prob0)):
-                norm_prob_0 = preprocessing.normalize([out_prob0[pred_i]])
-                norm_prob_1 = preprocessing.normalize([out_prob1[pred_i]])
-                norm_prob_2 = preprocessing.normalize([out_prob2[pred_i]])
-                norm_prob_3 = preprocessing.normalize([out_prob3[pred_i]])
-                norm_prob_4 = preprocessing.normalize([out_prob4[pred_i]])
-                # norm_prob_0 = softmax(out_prob0[pred_i])
-                # norm_prob_1 = softmax(out_prob1[pred_i])
-                # norm_prob_2 = softmax(out_prob2[pred_i])
-                # norm_prob_3 = softmax(out_prob3[pred_i])
-                # norm_prob_4 = softmax(out_prob4[pred_i])
-                norm_prob_all = norm_prob_0 + norm_prob_1 + norm_prob_2 + norm_prob_3 + norm_prob_4
-                preds[pred_i] = np.argmax(norm_prob_all)
+            # if subset not in ['Trichoblastoma']:
+            #     continue
 
-            preds_list = list(preds)
-            labels_list = list(np.array(labels.cpu()))
-            pred.append(preds_list)
-            true.append(labels_list)
 
-        pred = sum(pred, [])
-        true = sum(true, [])
-        total_pred.append(pred)
-        total_true.append(true)
-        
-        # print(len(pred),len(true))
-        for i in range( len(pred)):
-            if pred[i]==true[i]:
-                positive_list.append(list_path[ i][0])
-            else:
-                negative_list.append(list_path[ i][0])
+            directory = os.path.join(TEST_PATH, subset)
+            dataset = ImageFolder(root=directory, transform=image_transforms['valid'])
+
+            print(f'++ {subset}:')
+
+            # Create iterators for data loading
+            dataloader = data.DataLoader(dataset, batch_size=bs, shuffle=False,
+                                        num_workers=num_cpu, pin_memory=True, drop_last=False)
+
+            # Number of classes
+            num_classes = len(dataset.classes)
+
+            print("Validation-set size: {}".format(len(dataset)))
+
+
+            since = time.time()
+            best_acc = 0.0
+
+            model.eval()  # Set model to evaluate mode
+            running_corrects = 0
+            
+            
+            #########################
+            list_path=dataloader.sampler.data_source.imgs
+            categories_list=[]
+            for path in list_path:
+                # print(path)
+                category= path[0].split('/')[-2]
+                categories_list.append(category)
+            categories_list= list(set(categories_list))
+            #'E:/medical/Skin_Cancer_Detection_WSI-main/cheat/TEST_SET\\Histiocytoma\\bg\\Histiocytoma_06_1_101_67.jpg'
+            ##########################
+            
+            positive_list=[]
+            negative_list=[]
+            
+            pred = []
+            true = []
+            index=0
+            for inputs, labels in tqdm(dataloader):
+                inputs = inputs.to(device, non_blocking=True)
+                labels = labels.to(device, non_blocking=True)
                 
-        for category in categories_list:
-            sub_positive_list=[]
-            sub_negative_list=[]
-            for path in positive_list:
-                if category==path.split('\\')[-2]:
-                    sub_positive_list.append(path)
-            for path in negative_list:
-                if category==path.split('\\')[-2]:
-                    sub_negative_list.append(path)
-            write_path(sub_positive_list,True) 
-            write_path(sub_negative_list,False) 
-                   
+                #################################
+                # for i in range(bs):
+                #     if labels[i] != list_path[index*bs+i][1]:
+                #         print(labels[i],list_path[index*32+i][1], index)
+                        
+                # index += 1
+                ##################################
+                
+                # forward
+                # outputs = model(inputs)
+                # _, preds = torch.max(outputs, 1)
+                # preds = np.zeros(bs)
+                feature = model(inputs)
+                out_prob0 = np.array(classifier0(feature).detach().cpu())
+                out_prob1 = np.array(classifier1(feature).detach().cpu())
+                out_prob2 = np.array(classifier2(feature).detach().cpu())
+                out_prob3 = np.array(classifier3(feature).detach().cpu())
+                out_prob4 = np.array(classifier4(feature).detach().cpu())
+                
+                preds = np.zeros(len(out_prob0))
+                for pred_i in range(len(out_prob0)):
+                    norm_prob_0 = preprocessing.normalize([out_prob0[pred_i]])
+                    norm_prob_1 = preprocessing.normalize([out_prob1[pred_i]])
+                    norm_prob_2 = preprocessing.normalize([out_prob2[pred_i]])
+                    norm_prob_3 = preprocessing.normalize([out_prob3[pred_i]])
+                    norm_prob_4 = preprocessing.normalize([out_prob4[pred_i]])
+                    # norm_prob_0 = softmax(out_prob0[pred_i])
+                    # norm_prob_1 = softmax(out_prob1[pred_i])
+                    # norm_prob_2 = softmax(out_prob2[pred_i])
+                    # norm_prob_3 = softmax(out_prob3[pred_i])
+                    # norm_prob_4 = softmax(out_prob4[pred_i])
+                    norm_prob_all = norm_prob_0 + norm_prob_1 + norm_prob_2 + norm_prob_3 + norm_prob_4
+                    preds[pred_i] = np.argmax(norm_prob_all)
 
-        # epoch_acc = running_corrects.double() / dataset_sizes['valid']
-        cm = confusion_matrix(true, pred)
+                preds_list = list(preds)
+                labels_list = list(np.array(labels.cpu()))
+                pred.append(preds_list)
+                true.append(labels_list)
+
+            pred = sum(pred, [])
+            true = sum(true, [])
+            total_pred.append(pred)
+            total_true.append(true)
+            
+            # print(len(pred),len(true))
+            for i in range( len(pred)):
+                if pred[i]==true[i]:
+                    positive_list.append(list_path[ i][0])
+                else:
+                    negative_list.append(list_path[ i][0])
+                    
+            
+
+            # epoch_acc = running_corrects.double() / dataset_sizes['valid']
+            cm = confusion_matrix(true, pred)
+            print(cm)
+            f1 = f1_score(true, pred, average='macro')
+            print('f1 score:  ', f1)
+            # np.savetxt("cm_0221_triple_200.csv", cm, delimiter=",")
+            time_elapsed = time.time() - since
+            # print('Training complete in {:.0f}m {:.0f}s'.format(
+            #     time_elapsed // 60, time_elapsed % 60))
+            balance_acc = balanced_accuracy_score(true, pred)
+            print('Best balance Acc: {:4f}'.format(balance_acc))
+
+            # print(np.unique(true), np.unique(pred))
+            # print(cm)
+            # print(dataset.class_to_idx.keys())
+
+            # disp = ConfusionMatrixDisplay.from_predictions(y_true=true, y_pred=pred, labels=list(dataset.class_to_idx.keys()))
+            # fig = plt.figure()
+            # disp.plot()
+            # plt.savefig(f'../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/confusion_matrix/{subset}.jpg')
+
+            results['subset'].append(subset)
+            results['f1'].append(f1)
+            results['balanced_acc'].append(balance_acc)
+
+            # Calculate acc for each class
+            one_hot_pred = np.eye(num_classes)[np.array(pred, dtype=int).reshape(-1)]
+            one_hot_true = np.eye(num_classes)[np.array(true, dtype=int).reshape(-1)]
+
+            # print(one_hot_pred[:5])
+            # print(one_hot_true[:5])
+            # print((one_hot_pred * one_hot_true)[:5])
+            # print(np.sum(one_hot_pred * one_hot_true, axis=0))
+            # print(np.sum(one_hot_true, axis=0))
+
+            compare = np.sum(one_hot_pred * one_hot_true, axis=0) / np.sum(one_hot_true, axis=0)
+            classes = {
+            'bg': 0,
+            'Tumor': 1,
+            'Dermis': 2,
+            'Subcutis': 3,
+            'Epidermis': 4,
+            'Inflamm-Necrosis': 5,
+        }
+            for i, c in enumerate(classes):
+                if c not in results.keys():
+                    results[c] = []
+                results[c].append(compare[i])
+
+            print('Class acc:', compare)
+            del dataloader
+        total_true = sum(total_true, [])
+        total_pred = sum(total_pred, [])
+        cm = confusion_matrix(total_true, total_pred)
         print(cm)
-        f1 = f1_score(true, pred, average='macro')
+        f1 = f1_score(total_true, total_pred, average='macro')
         print('f1 score:  ', f1)
         # np.savetxt("cm_0221_triple_200.csv", cm, delimiter=",")
         time_elapsed = time.time() - since
         # print('Training complete in {:.0f}m {:.0f}s'.format(
         #     time_elapsed // 60, time_elapsed % 60))
-        balance_acc = balanced_accuracy_score(true, pred)
+        balance_acc = balanced_accuracy_score(total_true, total_pred)
         print('Best balance Acc: {:4f}'.format(balance_acc))
 
         # print(np.unique(true), np.unique(pred))
         # print(cm)
         # print(dataset.class_to_idx.keys())
+        print(list(dataset.class_to_idx.keys()))
+        disp = ConfusionMatrixDisplay.from_predictions(y_true=total_true
+                                                    , y_pred=total_pred
+                                                    , display_labels=list(dataset.class_to_idx.keys())
+                                                    ,normalize='true'
+                                                    )
+        fig = plt.figure()
+        disp.plot()
+        plt.savefig(f'../confusion_matrix/{MODEL_NAME}_{CHECKPOINT_NUM}_{percent}.jpg')
 
-        # disp = ConfusionMatrixDisplay.from_predictions(y_true=true, y_pred=pred, labels=list(dataset.class_to_idx.keys()))
-        # fig = plt.figure()
-        # disp.plot()
-        # plt.savefig(f'../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/confusion_matrix/{subset}.jpg')
-
-        results['subset'].append(subset)
+        results['subset'].append('TOTAL')
         results['f1'].append(f1)
         results['balanced_acc'].append(balance_acc)
 
         # Calculate acc for each class
-        one_hot_pred = np.eye(num_classes)[np.array(pred, dtype=int).reshape(-1)]
-        one_hot_true = np.eye(num_classes)[np.array(true, dtype=int).reshape(-1)]
+        one_hot_pred = np.eye(num_classes)[np.array(total_pred, dtype=int).reshape(-1)]
+        one_hot_true = np.eye(num_classes)[np.array(total_true, dtype=int).reshape(-1)]
 
         # print(one_hot_pred[:5])
         # print(one_hot_true[:5])
@@ -295,63 +435,19 @@ def main():
 
         compare = np.sum(one_hot_pred * one_hot_true, axis=0) / np.sum(one_hot_true, axis=0)
 
-        for i, c in enumerate(dataset.classes):
+        for i, c in enumerate(classes):
             if c not in results.keys():
                 results[c] = []
             results[c].append(compare[i])
 
         print('Class acc:', compare)
-    total_true = sum(total_true, [])
-    total_pred = sum(total_pred, [])
-    cm = confusion_matrix(total_true, total_pred)
-    print(cm)
-    f1 = f1_score(total_true, total_pred, average='macro')
-    print('f1 score:  ', f1)
-    # np.savetxt("cm_0221_triple_200.csv", cm, delimiter=",")
-    time_elapsed = time.time() - since
-    # print('Training complete in {:.0f}m {:.0f}s'.format(
-    #     time_elapsed // 60, time_elapsed % 60))
-    balance_acc = balanced_accuracy_score(total_true, total_pred)
-    print('Best balance Acc: {:4f}'.format(balance_acc))
+        df = pd.DataFrame(results)
+        print(df)
 
-    # print(np.unique(true), np.unique(pred))
-    # print(cm)
-    # print(dataset.class_to_idx.keys())
-    print(list(dataset.class_to_idx.keys()))
-    disp = ConfusionMatrixDisplay.from_predictions(y_true=total_true
-                                                   , y_pred=total_pred
-                                                   , display_labels=list(dataset.class_to_idx.keys())
-                                                   ,normalize='true'
-                                                   )
-    fig = plt.figure()
-    disp.plot()
-    plt.savefig(f'{FOLDER_PATH}/{FINETUNE_NAME}/confusion_matrix.jpg')
-
-    results['subset'].append('TOTAL')
-    results['f1'].append(f1)
-    results['balanced_acc'].append(balance_acc)
-
-    # Calculate acc for each class
-    one_hot_pred = np.eye(num_classes)[np.array(total_pred, dtype=int).reshape(-1)]
-    one_hot_true = np.eye(num_classes)[np.array(total_true, dtype=int).reshape(-1)]
-
-    # print(one_hot_pred[:5])
-    # print(one_hot_true[:5])
-    # print((one_hot_pred * one_hot_true)[:5])
-    # print(np.sum(one_hot_pred * one_hot_true, axis=0))
-    # print(np.sum(one_hot_true, axis=0))
-
-    compare = np.sum(one_hot_pred * one_hot_true, axis=0) / np.sum(one_hot_true, axis=0)
-
-    for i, c in enumerate(dataset.classes):
-        if c not in results.keys():
-            results[c] = []
-        results[c].append(compare[i])
-
-    print('Class acc:', compare)
-    df = pd.DataFrame(results)
-    print(df)
-
-    # df.to_csv(f'{FOLDER_PATH}/{FINETUNE_NAME}/test_result.csv', index=False)
+        df.to_csv(f'{FOLDER_PATH}/{FINETUNE_NAME}/test_result.csv', index=False)
 if __name__ == "__main__":
-    main()
+   
+
+    args=get_args()
+    main(args)
+    # print(args.eval.MODEL)

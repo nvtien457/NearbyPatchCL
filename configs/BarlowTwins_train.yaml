@@ -1,17 +1,17 @@
-name: BarlowTwins_double_2x128_20_256
+name: BarlowTwins_double_2x1024_20_256
 
 model:
   name: barlow_twins
   backbone: resnet50
   castrate: True
   params:
-    projector: '128-128'
+    projector: '8192-8192'
     lambd: 0.0051
 
 dataset:
   name: DBCATCH
   params:
-    name: 20
+    name: 10
     nearby: 0
 
 aug:
@@ -22,7 +22,7 @@ aug:
 train:
   batch_size: 256
   iters_to_accumulate: 1
-  stop_epoch: 275
+  stop_epoch: 300
   num_epochs: 400
   save_interval: 5
   knn_monitor: True
@@ -55,9 +55,12 @@ eval: None
 seed: 13
 num_workers: 4
 tensorboard: True
+pin_memory: True
+
 matplotlib: True
 
 resume:
-  status: True
-  ckpt: ../checkpoints/BarlowTwins_double_2x128_20_256/ckpt_best_229.pth
-  event: ../logs/in-progress_BarlowTwins_double_2x128_20_256_0621134203/events.out.tfevents.1687354923.selab4
+  status: False
+  ckpt: ../checkpoints/BarlowTwins_double_2x1024_20_256/ckpt_best_266.pth
+  event: ../logs/in-progress_BarlowTwins_double_2x1024_20_256_0704032733/events.out.tfevents.1688441253.selab4
+  
