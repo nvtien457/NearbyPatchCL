@@ -11,7 +11,7 @@ dataset:
   name: CATCH
   params:
     name: 10
-    nearby: [0, 2, 4, 7]
+    nearby: [0, 2]
 
 aug:
   name: supcon
@@ -21,7 +21,7 @@ aug:
 train:
   batch_size: 64
   iters_to_accumulate: 4
-  stop_epoch: 150
+  stop_epoch: 275
   num_epochs: 400
   save_interval: 5
   knn_monitor: True
@@ -78,6 +78,6 @@ matplotlib: True
 
 
 resume:
-  status: False
-  ckpt: ../checkpoints/Tien_SupCon0247_10_256/ckpt_099.pth
-  event: ../logs/in-progress_Tien_SupCon0247_10_256_0505140919/events.out.tfevents.1683295759.selab4
+  status: True
+  ckpt: ../checkpoints/SupCon0247_10_256/ckpt_best_149.pth
+  event: ../logs/in-progress_SupCon0247_10_256_0705114220/events.out.tfevents.1688557340.selab4

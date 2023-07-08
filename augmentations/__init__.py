@@ -5,6 +5,7 @@ from .supcon_aug import SupConTransform
 from .Multi_FixTransform import Multi_Fixtransform
 from .barlow_twins_aug import BarlowTwinsTransform
 
+import torchvision
 import torchvision.transforms as T
 
 imagenet_mean_std = [[0.485, 0.456, 0.406],[0.229, 0.224, 0.225]]
@@ -68,6 +69,13 @@ def get_aug(aug_cfg, train=True):
 
         elif name == 'barlow_twins':
             augmentation = BarlowTwinsTransform(**aug_cfg.params)
+
+        elif name == 'micle':
+            augmentation = torchvision.transforms.Compose([
+                torchvision.transforms.Resize([aug_cfg.params['image_size'], aug_cfg.params['image_size']]),
+                torchvision.transforms.ToTensor(),
+                torchvision.transforms.Normalize(mean=(0.4561, 0.2746, 0.1623), std=(0.2609, 0.1639, 0.0991))
+            ])
 
         else:
             raise NotImplementedError
