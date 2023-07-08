@@ -11,6 +11,7 @@ from .supcon import supcon_train
 from .clsa import clsa_train
 from .barlow_twins import barlowtwins_train
 from .barlow_twins_nearby import barlowtwins_nearby_train
+from .micle import micle_train
 
 import sys
 sys.path.append('../')
@@ -54,6 +55,8 @@ class Trainer:
 
         elif args.model.name == 'clsa':
             self.train_func = clsa_train
+        elif args.model.name == 'micle':
+            self.train_func = micle_train
 
         elif args.model.name == 'barlow_twins':
             self.train_func = barlowtwins_train
