@@ -1,5 +1,4 @@
-name: SimCLR_20_2048
-
+name: SimCLR_10_512
 model:
   name: simclr
   backbone: resnet50
@@ -10,7 +9,7 @@ model:
 dataset:
   name: CATCH
   params:
-    name: 20
+    name: 10
 
 aug:
   name: simclr
@@ -19,8 +18,8 @@ aug:
 
 train:
   batch_size: 256
-  iters_to_accumulate: 8
-  stop_epoch: 275
+  iters_to_accumulate: 2
+  stop_epoch: 180
   num_epochs: 400
   save_interval: 1
   knn_monitor: True
@@ -36,7 +35,7 @@ train:
   optimizer:
     name: sgd
     params:
-      lr: 0.2
+      lr: 0.05
       momentum: 0.9
       weight_decay: 0.000001
       
@@ -52,8 +51,8 @@ seed: 47
 num_workers: 4
 tensorboard: True
 matplotlib: True
-
+pin_memory: True
 resume:
-  status: True
-  ckpt: ../checkpoints/SimCLR_20_2048/ckpt_249.pth
-  event: ../logs/in-progress_SimCLR_20_2048_0522144029/events.out.tfevents.1684766429.selab4
+  status: False
+  ckpt: ../checkpoints/SimCLR_10_512/ckpt_best_012.pth
+  event: ../logs/in-progress_SimCLR_10_512_0729024031/events.out.tfevents.1690598431.selab2

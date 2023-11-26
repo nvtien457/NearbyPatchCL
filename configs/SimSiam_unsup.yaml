@@ -56,8 +56,8 @@ seed: 23
 num_workers: 4
 tensorboard: True
 matplotlib: True
-
+pin_memory: True
 resume:
-  status: True
+  status: False
   ckpt: ../checkpoints/T_SimSiam_10_256/ckpt_034.pth
   event: ../logs/in-progress_T_SimSiam_10_256_0614030417/events.out.tfevents.1686711857.selab2

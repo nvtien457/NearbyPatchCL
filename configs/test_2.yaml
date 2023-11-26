@@ -1,8 +1,0 @@
-name : testing
-
-eval :
-  MODEL_PATH: ../checkpoints
-  MODEL_NAME: SimCLR_20_2048
-  CHECKPOINT_NUM: 274
-  PERCENTAGE: [100,50,25,10,5,1]
-  dataset: None

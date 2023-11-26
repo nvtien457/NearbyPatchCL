@@ -1,4 +1,4 @@
-name: OSupCon02_10_256
+name: OSupCon_2_86_30_nopre
 
 model:
   name: supcon
@@ -10,8 +10,8 @@ model:
 dataset:
   name: CATCH
   params:
-    name: 10
-    nearby: [0, 2]
+    name: full
+    nearby: [0,2]
 
 aug:
   name: supcon
@@ -19,11 +19,11 @@ aug:
     image_size: 128
 
 train:
-  batch_size: 64
-  iters_to_accumulate: 4
-  stop_epoch: 275
+  batch_size: 86
+  iters_to_accumulate: 1
+  stop_epoch: 271
   num_epochs: 400
-  save_interval: 5
+  save_interval: 1
   knn_monitor: True
   knn_interval: 5
   knn_k: 200
@@ -50,25 +50,26 @@ train:
       constant_predictor_lr: False
 
 eval:
-  batch_size: 256
+  resume: False
+  batch_size: 512
   num_epochs: 30
   fold: 5
-  eval_from: ../checkpoints/Tien_SupCon07_10_256/ckpt_049.pth
-  name: e50_p10
-  dataset: 10
+  eval_from: ../checkpoints/OSupCon02_10_256/ckpt_best_149.pth
+  name: e30_p100
+  dataset: 100
 
   optimizer:
     name: sgd
     params:
-      lr: 0.1
+      lr: 0.2
       momentum: 0.9
       weight_decay: 0
   scheduler:
     name: lr_scheduler
     params:
       warmup_epochs: 10
-      warmup_lr: 0.01
-      final_lr: 0.0001
+      warmup_lr: 0.001
+      final_lr: 0.003
 
 seed: 11
 num_workers: 4
@@ -79,5 +80,5 @@ matplotlib: True
 
 resume:
   status: True
-  ckpt: ../checkpoints/SupCon0247_10_256/ckpt_best_149.pth
-  event: ../logs/in-progress_SupCon0247_10_256_0705114220/events.out.tfevents.1688557340.selab4
+  ckpt: ../checkpoints/OSupCon02_20_256/ckpt_164.pth
+  event: None

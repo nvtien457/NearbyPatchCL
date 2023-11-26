@@ -1,8 +1,0 @@
-name : testing
-
-eval :
-  MODEL_PATH: ../checkpoints
-  MODEL_NAME:  BarlowTwins_double_2x1024_20_256
-  CHECKPOINT_NUM: 299
-  PERCENTAGE: [100,25,10,1]
-  dataset: None
