@@ -3,8 +3,7 @@
 <div align="left">
 
   [[`Paper`](https://google.com)]
-  <!-- [[`Colab Notebook`](https://colab.research.google.com/drive/1oLg0qe0nqLuIeaklzwbkk3IOKmMb0clk)]
-  [[`Web Demo`](https://github.com/KiseKloset/KiseKloset)] -->
+  [[`Colab Notebook`](https://colab.research.google.com/drive/1GQrt6WA9rFhiGy2nI5eE9fRTE7-5TdQR?usp=sharing)]
 
   <img src="./assets/architecture.jpg" class="left" width='100%'>
 
@@ -27,50 +26,44 @@ conda activate nearby
 bash scripts/install.sh
 ```
 
-### Data Preparation
+### Dataset
 
-1. Download CATCH dataset from https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=101941773. Both Tissue Slide Images and Annotations are required.
+<!-- 1. Download CATCH dataset from https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=101941773. Both Tissue Slide Images and Annotations are required.
 
 2. Install openslide from https://openslide.org/download/
 
-3. Run scripts
+3. Run scripts -->
 
-| | Center | Nearby |
+Dataset is cropped from Tissue Slide Images provided by [CATCH dataset]():
+
++ [Train set](https://studenthcmusedu-my.sharepoint.com/:f:/g/personal/19125079_student_hcmus_edu_vn/El5OuDuOcZ9OsH7Og4n06B0Bxx2q5P3riwhB6Qhc_ezr1w?e=HBewsU)
+
++ [Finetune set](https://studenthcmusedu-my.sharepoint.com/:u:/g/personal/19125079_student_hcmus_edu_vn/EYM3yOR5X69AhvlbYIW-FeIB1X0BOYhKWXHWjJg7ElI-hg?e=wvgjjo)
+
++ [Test set](https://studenthcmusedu-my.sharepoint.com/:u:/g/personal/19125079_student_hcmus_edu_vn/Edn14ViXfSdGhw47RS5KXjkB3apJagBvU-Gn9TodKkq6yw?e=J8q2N8)
+
++ [Pretrain model](https://studenthcmusedu-my.sharepoint.com/:f:/g/personal/19125079_student_hcmus_edu_vn/Er_jhqx23DBFoKNO_e3OYSgBYcRjYAUOjHZLJ7IqPuvmOA?e=gSIAUb)
+
+<!-- | | Center | Nearby |
 | :- | --: | --: |
 | PCATCH-0 | 247,000 | 0 |
 | PCATCH-1 | 123,500 | 123,500 |
 | PCATCH-2 | 82,254 | 164,502 |
 | PCATCH-4 | 49,400 | 197,600 |
-| PCATCH-8 | 27,417 | 246,753 |
+| PCATCH-8 | 27,417 | 246,753 | -->
 
 Dataset folder structure
 ```
 ├── data
 |   ├── TRAIN_SET
 |   |   ├── Histiocytoma
-|   |   |   ├── Histiocytoma_01_1_patch_000_112_60.jpg
-|   |   |   ├── Histiocytoma_01_1_patch_001_65_46.jpg
-|   |   |   ├── ...
 |   |   ├── MCT
-|   |   |   ├── MCT_01_1_patch_000_123_145.jpg
-|   |   |   ├── MCT_01_1_patch_001_162_135.jpg
-|   |   |   ├── ...
 │   │   ├── Melanoma
 │   │   ├── PNST
 │   │   ├── Plasmacytoma
 │   │   ├── SCC
 │   │   ├── Trichoblastoma
 |   ├── TRAIN_SET_NEAR_0
-|   |   ├── Histiocytoma
-|   |   |   ├── Histiocytoma_01_1_patch_000_0.jpg
-|   |   |   ├── Histiocytoma_01_1_patch_001_0.jpg
-|   |   |   ├── ...
-|   |   ├── MCT
-│   │   ├── Melanoma
-│   │   ├── PNST
-│   │   ├── Plasmacytoma
-│   │   ├── SCC
-│   │   ├── Trichoblastoma
 |   ├── TRAIN_SET_NEAR_2
 |   ├── ...
 |   ├── TRAIN_SET_NEAR_8
@@ -84,10 +77,67 @@ Dataset folder structure
 |   ├── TEST_SET
 ```
 
-### Inference
+- Image name format in **TRAIN_SET**: 
+```[WSI_filname]_patch_[patch_id]_[x]_[y].jpg```
+
+ex: Histiocytoma_01_1_patch_000_112_60.jpg
+
+- Image name format in **TRAIN_SET_NEAR_***: 
+```[WSI_filename]_patch_[patch_id]_[nearby_id].jpg```
+
+ex: Histiocytoma_01_1_patch_000_0.jpg
+
+- **TRAIN_SET** and **TRAIN_SET_NEAR_*** share similar structure (7 subfolders for tumors). **TRAIN_SET** contains center patches (nearby_id = 1).
+
+- **TRAIN_VAL_SET** and **TEST_SET** share similar structure (6 classes in skin).
 
 
-### Training
+### 1. Pre-train unsupervised
+- Use file unsup.sh.
+- Determine the path of logs, checkpoints, data folder.
+- Config setting for training is saved in .yaml file.
+
+```
+!python train_unsupervised.py \
+    -c ./configs/SimCLR_unsup.yaml \
+    --data_dir /content \
+    --ckpt_dir path \
+    --log_dir path
+```
+
+- To train method NearbyPatchCL(N=X), use config files NEAR_X_D.yaml
+
+### 2. Finetune
+
+- Use file finetune.sh
+
+```
+!python train_linear.py \
+    -c ./configs/finetune.yaml \
+    --data_dir Path 
+```
+
+### 3. Fully-supervised training
+- Use file **sup.sh**. 
+- Determine the path of logs, checkpoints, data folder.
+- Config setting for training is saved in **.yaml** file.
+
+```
+!python train_supervised.py \
+    -c ./configs/SimCLR_unsup.yaml \
+    --data_dir /content \
+    --ckpt_dir path \
+    --log_dir path
+```
+
+### 4. Evaluation
+- Use file test.sh
+
+```
+!python test.py \
+    -c ./configs/test.yaml \
+    --test_dir Path
+```
 
 
 ## <div align="center"> 📈 Result </div>
@@ -100,13 +150,14 @@ Dataset folder structure
 </div>
 
 ## <div align="center"> ℹ Citation </div>
-If our code or paper is helpful to your work, please consider citing:
+If our code or paper is helpful to your work, please give us star and consider citing:
 
 ```bibtex
 @inproceedings{NearbyPatchCL,
   title        = {NearbyPatchCL: Leveraging Nearby Patches for Self-Supervised Patch-Level Multi-Class Classification in Whole-Slide Images},
   author       = {Le, Gia-Bao and Nguyen, Van-Tien and Le, Trung-Nghia and Tran, Minh-Triet},
-  year         = 2023,
+  year         = 2024,
+  book         = {MMM 2024 - The 30th International Conference on Multimedia Modeling}
 }
 ```
 
