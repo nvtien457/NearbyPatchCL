@@ -1,4 +1,7 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+'''
+Modify from https://github.com/facebookresearch/moco-v3
+'''
+
 from PIL import ImageFilter
 import random
 import torchvision.transforms as T

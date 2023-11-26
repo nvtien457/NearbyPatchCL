@@ -74,7 +74,7 @@ Dataset folder structure
 |   |   ├── Subcutis
 |   |   ├── Tumor
 |   |   ├── bg
-|   ├── TEST_SET
+|   └── TEST_SET
 ```
 
 - Image name format in **TRAIN_SET**: 

@@ -1,4 +1,7 @@
-import torchvision
+'''
+Modify from https://github.com/facebookresearch/swav
+'''
+
 import torchvision.transforms as T
 
 import random

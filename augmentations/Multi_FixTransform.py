@@ -1,5 +1,5 @@
 #modified from https://github.com/facebookresearch/swav/blob/master/src/multicropdataset.py
-from torchvision import transforms
+import torchvision.transforms as T
 from augmentations.RandAugment import RandAugment
 import random
 from PIL import ImageFilter
@@ -24,7 +24,7 @@ class Multi_Fixtransform(object):
             min_scale_crops,
             max_scale_crops,
             aug_times,
-            normalize=transforms.Normalize(*imagenet_mean_std),
+            normalize=T.Normalize(*imagenet_mean_std),
             init_size=128):
         """
         :param size_crops: list of crops with crop output img size
@@ -40,15 +40,15 @@ class Multi_Fixtransform(object):
         assert len(max_scale_crops) == len(nmb_crops)
         trans=[]
         #key image transform
-        self.weak = transforms.Compose([
-            transforms.RandomResizedCrop(init_size, scale=(0.2, 1.)),
-            transforms.RandomApply([
-                transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
+        self.weak = T.Compose([
+            T.RandomResizedCrop(init_size, scale=(0.2, 1.)),
+            T.RandomApply([
+                T.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
             ], p=0.8),
-            transforms.RandomGrayscale(p=0.2),
-            transforms.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
+            T.RandomGrayscale(p=0.2),
+            T.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
+            T.RandomHorizontalFlip(),
+            T.ToTensor(),
             normalize
         ])
         trans.append(self.weak)
@@ -58,33 +58,33 @@ class Multi_Fixtransform(object):
         trans_strong=[]
         for i in range(len(size_crops)):
 
-            randomresizedcrop = transforms.RandomResizedCrop(
+            randomresizedcrop = T.RandomResizedCrop(
                 size_crops[i],
                 scale=(min_scale_crops[i], max_scale_crops[i]),
             )
 
-            strong = transforms.Compose([
+            strong = T.Compose([
                 randomresizedcrop,
-                transforms.RandomApply([
-                    transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
+                T.RandomApply([
+                    T.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
                 ], p=0.8),
-                transforms.RandomGrayscale(p=0.2),
-                transforms.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
-                transforms.RandomHorizontalFlip(),
+                T.RandomGrayscale(p=0.2),
+                T.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
+                T.RandomHorizontalFlip(),
                 RandAugment(n=self.aug_times, m=10),
-                transforms.ToTensor(),
+                T.ToTensor(),
                 normalize
             ])
 
-            weak = transforms.Compose([
+            weak = T.Compose([
                 randomresizedcrop,
-                transforms.RandomApply([
-                    transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
+                T.RandomApply([
+                    T.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
                 ], p=0.8),
-                transforms.RandomGrayscale(p=0.2),
-                transforms.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
+                T.RandomGrayscale(p=0.2),
+                T.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
+                T.RandomHorizontalFlip(),
+                T.ToTensor(),
                 normalize
             ])
 

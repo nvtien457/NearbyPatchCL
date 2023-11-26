@@ -1,9 +1,12 @@
-import torchvision
+'''
+Modify from https://github.com/HobbitLong/SupContrast
+'''
+
 import torchvision.transforms as T
 
 class SupConTransform:
     def __init__(self, image_size=224, dataset='imagenet'):
-        assert dataset in ['cifar10', 'cifar100', 'imagenet', 'path']
+        assert dataset in ['cifar10', 'cifar100', 'imagenet']
         if dataset == 'cifar10':
             mean = (0.4914, 0.4822, 0.4465)
             std = (0.2023, 0.1994, 0.2010)
@@ -13,9 +16,6 @@ class SupConTransform:
         elif dataset == 'imagenet':
             mean = (0.485, 0.456, 0.406)
             std = (0.229, 0.224, 0.225)
-        elif dataset == 'path':
-            mean = eval(opt.mean)
-            std = eval(opt.std)
         else:
             raise ValueError('dataset not supported: {}'.format(dataset))
         normalize = T.Normalize(mean=mean, std=std)
