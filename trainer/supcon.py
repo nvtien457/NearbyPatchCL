@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import numpy as np
 
 from optimizers import warmup_learning_rate, adjust_learning_rate
 from tools import accuracy
@@ -11,16 +12,16 @@ def supcon_train(inputs, labels, model, criterion, args):
 
     img_0 = torch.cat((inputs[0][0], torch.cat([inputs[1][i][0] for i in range(len(inputs[1]))], dim=0)), dim=0).to(args.device)
     img_1 = torch.cat((inputs[0][1], torch.cat([inputs[1][i][1] for i in range(len(inputs[1]))], dim=0)), dim=0).to(args.device)
-    labels = torch.Tensor([[i for _ in range(n+1)] for i in range(batch_size)]).flatten().to(args.device)
+    labels = torch.from_numpy(np.tile(np.array([i for i in range(batch_size)]), n+1)).to(args.device)
 
     index = [i for i in range(labels.shape[0])]
-    random.shuffle(index)
+    # random.shuffle(index)
 
     # compute output
     f0 = model(img_0)
     f1 = model(img_1)
     features = torch.cat([f0.unsqueeze(1), f1.unsqueeze(1)], dim=1)
-    loss = criterion(features[index], labels[index])
+    loss = criterion(features[index], labels[index], B=batch_size)
 
     result_dict = {
         'loss': loss

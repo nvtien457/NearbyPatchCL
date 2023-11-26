@@ -37,7 +37,7 @@ class SCCATCHDataset(torch.utils.data.Dataset):
                 if os.path.exists(image_path):
                     nearby_image_path = image_path.replace('_SET', '_SET_NEAR')
 
-                    n = []
+                    n = list()
                     for i, nearby_index in enumerate(self.nearby_indices):
                       nb_path = nearby_image_path.replace('_NEAR', '_NEAR_{}'.format(nearby_index))
                       idx = nb_path.find('patch') + 10
@@ -49,8 +49,8 @@ class SCCATCHDataset(torch.utils.data.Dataset):
                           raise ValueError('Can not find patch_id = {:01} with image {}'.format(nearby_index, image_path))
 
                       if os.path.exists(nb_path):
-                          self.list_image_path.append(nb_path)
-                          self.list_nearby_path.append(image_path)
+                        #   self.list_image_path.append(nb_path)
+                        #   self.list_nearby_path.append(image_path)
                           n.append(nb_path)
                     
                     self.list_image_path.append(image_path)
@@ -70,16 +70,23 @@ class SCCATCHDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         image_path = self.list_image_path[idx]
-        nearby_path = self.list_nearby_path[idx]
+        list_nearby_paths = self.list_nearby_path[idx]
+        # print(image_path)
+        # print(list_nearby_paths)
 
         origin_image = Image.open(image_path).convert('RGB')
-        nearby_image = Image.open(nearby_path).convert('RGB')
 
-        if self.transform:
-            origin_image = self.transform(origin_image)
-            nearby_image = self.transform(nearby_image)
+        nearby_images = []
+        for nb_path in list_nearby_paths:
+            # print('Nearby_path:', nb_path)
+            image = Image.open(nb_path).convert('RGB')
 
-        return (origin_image, [nearby_image[0]]), 0
+            if self.transform:
+                image = self.transform(image)
+
+            nearby_images.append(image)
+
+        return (origin_image, nearby_images), 0
         
 
     def __len__(self):
