@@ -1,4 +1,4 @@
-name: BYOL_10_256
+name: BYOL_20_256
 
 model:
   name: byol
@@ -22,9 +22,9 @@ aug:
 train:
   batch_size: 256
   iters_to_accumulate: 1
-  stop_epoch: 150
+  stop_epoch: 274
   num_epochs: 400
-  save_interval: 5
+  save_interval: 1
   knn_monitor: True
   knn_interval: 5
   knn_k: 200
@@ -56,8 +56,8 @@ seed: 13
 num_workers: 4
 tensorboard: True
 matplotlib: True
-
+pin_memory: True
 resume:
-  status: False
-  ckpt: None
-  event: None
+  status: True
+  ckpt: ../checkpoints/BYOL_10_256/ckpt_197.pth
+  event: ../logs/in-progress_BYOL_10_256_0728140416/events.out.tfevents.1690553057.selab2

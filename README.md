@@ -1,8 +1,17 @@
-# Contrastive-Learning
+# SELF-SUPERVISED LEARNING APPROACH FOR DIGITAL PATHOLOGY IMAGE ANALYSIS
 
-Người thực hiện: Nguyễn Văn Tiến
+Nguyễn Văn Tiến - 19125124 \
+Lê Gia Bảo - 19125079 
 
-Implement các thuật toán contrastive & non-contrastive learning: SimCLR, Moco, SimSiam, BYOL, SimTriplet.
+Implement self-supervised learning methods: SimCLR, MoCo, SimSiam, BYOL, SimTriplet, BarlowTwins, SupCon, MICLe.
+
+Dataset:
++ Train set: https://studenthcmusedu-my.sharepoint.com/:f:/g/personal/19125079_student_hcmus_edu_vn/El5OuDuOcZ9OsH7Og4n06B0Bxx2q5P3riwhB6Qhc_ezr1w?e=HBewsU
+
++ Finetune set: https://studenthcmusedu-my.sharepoint.com/:u:/g/personal/19125079_student_hcmus_edu_vn/EYM3yOR5X69AhvlbYIW-FeIB1X0BOYhKWXHWjJg7ElI-hg?e=wvgjjo
+
++ Test set: https://studenthcmusedu-my.sharepoint.com/:u:/g/personal/19125079_student_hcmus_edu_vn/Edn14ViXfSdGhw47RS5KXjkB3apJagBvU-Gn9TodKkq6yw?e=J8q2N8
++ Pretrain model : https://studenthcmusedu-my.sharepoint.com/:f:/g/personal/19125079_student_hcmus_edu_vn/Er_jhqx23DBFoKNO_e3OYSgBYcRjYAUOjHZLJ7IqPuvmOA?e=gSIAUb
 
 ## Cây thư mục
 
@@ -68,33 +77,47 @@ Implement các thuật toán contrastive & non-contrastive learning: SimCLR, Moc
 ├── train_unsupervised.py
 └── unsup.sh
 ```
+# 1. Fully-supervised training setting
 
-- Dùng hàm get_aug trong thư mục **`augmentations`** để khởi tạo TwoCropsTransform(transform) (2 transforms cùng 1 lúc). Hiện tại đã implement được Moco, SimCLR, BYOL.
+- Use file **sup.sh**. 
+- Determine the path of logs, checkpoints, data folder.
+- Config setting for training is saved in **.yaml** file.
 
-- Thực hiện chỉnh sửa các tên, biến cần truyền vào của (model, augmentation, loss, dataset, optimizer, train) ở trong các file .yaml trong thư mục **`configs`**.
+```
+!python train_supervised.py \
+    -c ./configs/SimCLR_unsup.yaml \
+    --data_dir /content \
+    --ckpt_dir path \
+    --log_dir path
+```
+# 1. Pre-train unsupervised setting
 
-- Thư mục **`data`** chứa các dataset folder, trong mỗi folder chứa các file .txt (đường dẫn tới ảnh).
-
-- Dùng hàm get_criterion trong thư mục **`losses`** để khởi tạo Criterion. Ngoài ra còn implement các hàm loss không có sẵn trên Pytorch.
-
-- Trong thư mục **`models`**, dùng hàm get_model để khởi tạo model, get_backbone để khởi tạo backbone (nếu muốn giữ y nguyên backbone gốc thì castrate = False trong config).
-
-- Trong thư mục **`optimizers`**, dùng hàm get_optimizer để khởi tạo optimizer, get_scheduler để khởi tạo scheduler. Hiện mới có LRScheduler được implement, warmup_epoch có thể bằng 0.
-
-- Thư mục **`tools`** chứa đủ thứ: accuracy, argument, logger, meter, ...
-
-- Thư mục **`trainer`** dùng để xác định cách mỗi model sẽ lấy data từ dataloader, forward, trả về những gì, tính accuracy sao, ... Trả về đều dưới dạng dict, luôn có 1 key loss.
-
-# 1. Train unsupervised setting
-
-- Sử dụng file train_unsupervised.py. 
-- XÁC ĐỊNH các đường dẫn tới logs, checkpoints, data folder trước khi train.
-- Kiểm tra lại file .yaml (trong folder configs) được dùng.
+- Use file **unsup.sh**. 
+- Determine the path of logs, checkpoints, data folder.
+- Config setting for training is saved in **.yaml** file.
 
 ```
 !python train_unsupervised.py \
     -c ./configs/SimCLR_unsup.yaml \
     --data_dir /content \
-    --ckpt_dir ../NVT_checkpoints \
-    --log_dir ../NVT_logs
+    --ckpt_dir path \
+    --log_dir path
+```
+
+- To train method NearbyPatchCL(N=X), use config files **NEAR_X_D.yaml**
+
+# 2. Finetune model
+
+- Use file **finetune.sh** 
+```
+!python train_linear.py \
+    -c ./configs/finetune.yaml \
+    --data_dir Path 
+```
+# 3. Evaluate testing
+- Use file **test.sh** 
+```
+!python test.py \
+    -c ./configs/test.yaml \
+    --test_dir Path
 ```

@@ -1,3 +1,10 @@
+# python finetune.py \
+#     -c ./configs/f3.yaml \
+#     --ckpt_dir ../checkpoints \
+#     --log_dir ../logs \
+#     --data_dir ../CATCH \
+#     --mem_dir ../CATCH/TRAIN_VAL_SET \
+#     --val_dir ../CATCH/FINETUNE
 
 python finetune.py \
     -c ./configs/f1.yaml \
@@ -6,6 +13,7 @@ python finetune.py \
     --data_dir ../CATCH \
     --mem_dir ../CATCH/TRAIN_VAL_SET \
     --val_dir ../CATCH/FINETUNE
+
 # python finetune.py \
 #     -c ./configs/f2.yaml \
 #     --ckpt_dir ../checkpoints \
@@ -13,13 +21,7 @@ python finetune.py \
 #     --data_dir ../CATCH \
 #     --mem_dir ../CATCH/TRAIN_VAL_SET \
 #     --val_dir ../CATCH/FINETUNE
-# python finetune.py \
-#     -c ./configs/f3.yaml \
-#     --ckpt_dir ../checkpoints \
-#     --log_dir ../logs \
-#     --data_dir ../CATCH \
-#     --mem_dir ../CATCH/TRAIN_VAL_SET \
-#     --val_dir ../CATCH/FINETUNE
+
 # python finetune.py \
 #     -c ./configs/f4.yaml \
 #     --ckpt_dir ../checkpoints \
@@ -42,3 +44,11 @@ python finetune.py \
 #     --data_dir ../CATCH \
 #     --mem_dir ../CATCH/TRAIN_VAL_SET \
 #     --val_dir ../CATCH/FINETUNE
+
+# python test_finetune.py \
+#     -c ./configs/f4.yaml \
+#     --ckpt_dir ../checkpoints \
+#     --log_dir ../logs \
+#     --data_dir ../CATCH \
+#     --mem_dir ../CATCH/TRAIN_VAL_SET \
+#     --val_dir ../HE

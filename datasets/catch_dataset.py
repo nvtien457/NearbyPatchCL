@@ -38,7 +38,15 @@ class CATCHDataset(torch.utils.data.Dataset):
         self.nearby_indices = nearby
         self.transform = transform
         self.folder_dataset_path = os.path.join('data', name)
-        
+        samples_num=0
+        if name =='10':
+            samples_num=10000
+        elif name =='20':
+            samples_num=20000
+        elif name=='full':
+            samples_num=34000
+        print(samples_num)
+        # samples_num//=2
         if cancer is None:
             self.cancer = ['Histiocytoma', 'MCT', 'Melanoma',
                            'Plasmacytoma', 'PNST', 'SCC', 'Trichoblastoma']
@@ -46,10 +54,12 @@ class CATCHDataset(torch.utils.data.Dataset):
             self.cancer = cancer
         
         self.list_image_path = []
+        
         self.missing_image_path = []
         for file in os.listdir(self.folder_dataset_path):   # .txt file contain path to image
             f = open(os.path.join(self.folder_dataset_path, file), 'r', encoding="utf-8")
-            for path_str in f.readlines():
+            limit= samples_num//max((len(nearby)+1,1))
+            for path_str in f.readlines()[:limit]:
                 image_path = os.path.join(self.data_dir, path_str.replace('\n', '') + '.jpg')
                 pos = image_path.find('patch')
                 patch_number = int(image_path[pos+6:pos+9]) # 000 (..._000.jpg)

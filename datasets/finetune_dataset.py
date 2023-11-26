@@ -2,6 +2,7 @@ import torch
 import os
 from PIL import Image
 import random
+# from libtiff import TIFF
 
 class FinetuneDataset(torch.utils.data.Dataset):
     def __init__(self, data_dir:str, name:str, transform=None):
@@ -18,8 +19,10 @@ class FinetuneDataset(torch.utils.data.Dataset):
         self.list_image_path = []
         self.labels = []
         self.missing_image_path = []
-
-        cancer_lst = os.listdir(data_dir + '/VAL_SET')
+        if data_dir.split('/')[-1] != 'HE':
+            cancer_lst = os.listdir(data_dir + '/VAL_SET')
+        else:
+            cancer_lst = os.listdir(data_dir)
         cancer_lst.sort()
         # self.classes = {cls: i for i, cls in enumerate(cancer_lst )}
         self.classes = {
@@ -30,7 +33,14 @@ class FinetuneDataset(torch.utils.data.Dataset):
             'Epidermis': 4,
             'Inflamm-Necrosis': 5,
         }
+        classes= ['bg', 'Tumor', 'Dermis', 'Subcutis', 'Epidermis', 'Inflamm-Necrosis']
 
+        # classes=['Histiocytoma','Melanoma','PNST','Plasmacytoma','MCT'
+        #               ,'SCC'
+        #               ,'Trichoblastoma']
+        # classes= ['ADI', 'BACK', 'DEB', 'LYM', 'MUC', 'MUS', 'NORM', 'STR', 'TUM']
+        self.classes = {cls: i for i, cls in enumerate(classes )}
+        
         for file in os.listdir(self.folder_dataset_path):   # .txt file contain path to image
             c = file.split('_')[0]
 
@@ -43,8 +53,11 @@ class FinetuneDataset(torch.utils.data.Dataset):
                 else:
                     self.missing_image_path.append(image_path)
             f.close()
+        try:   
+            print('Missing images:', len(self.missing_image_path),self.missing_image_path[0])
+        except:
+            print('No missing images')
             
-        print('Missing images:', len(self.missing_image_path))
         # ../CATCH/FINETUNE/VAL_SET/Dermis/Plasmacytoma_31_1_99551.0_22998.0.jpg
 
     def __getitem__(self, idx):

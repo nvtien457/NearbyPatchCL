@@ -48,10 +48,21 @@ def main(args):
     criterion = get_criterion(criterion_cfg=args.train.criterion)
 
     # Use Mixed Precision Training
-    args.train.optimizer.params['lr']        = args.train.optimizer.params['lr']        * args.train.batch_size * args.train.iters_to_accumulate / 256
-    args.train.scheduler.params['base_lr']   = args.train.scheduler.params['base_lr']   * args.train.batch_size * args.train.iters_to_accumulate / 256
-    args.train.scheduler.params['warmup_lr'] = args.train.scheduler.params['warmup_lr'] * args.train.batch_size * args.train.iters_to_accumulate / 256
-    args.train.scheduler.params['final_lr']  = args.train.scheduler.params['final_lr']  * args.train.batch_size * args.train.iters_to_accumulate / 256
+    # args.train.optimizer.params['lr']        = args.train.optimizer.params['lr']        * args.train.batch_size * args.train.iters_to_accumulate / 256
+    # args.train.scheduler.params['base_lr']   = args.train.scheduler.params['base_lr']   * args.train.batch_size * args.train.iters_to_accumulate / 256
+    # args.train.scheduler.params['warmup_lr'] = args.train.scheduler.params['warmup_lr'] * args.train.batch_size * args.train.iters_to_accumulate / 256
+    # args.train.scheduler.params['final_lr']  = args.train.scheduler.params['final_lr']  * args.train.batch_size * args.train.iters_to_accumulate / 256
+    
+    args.train.optimizer.params['lr']        = args.train.optimizer.params['lr']         * args.train.iters_to_accumulate 
+    args.train.scheduler.params['base_lr']   = args.train.scheduler.params['base_lr']    * args.train.iters_to_accumulate 
+    args.train.scheduler.params['warmup_lr'] = args.train.scheduler.params['warmup_lr']  * args.train.iters_to_accumulate 
+    args.train.scheduler.params['final_lr']  = args.train.scheduler.params['final_lr']  * args.train.iters_to_accumulate 
+    
+    
+    args.train.optimizer.params['lr']        = 2*args.train.optimizer.params['lr']         * args.train.iters_to_accumulate 
+    args.train.scheduler.params['base_lr']   = 2*args.train.scheduler.params['base_lr']    * args.train.iters_to_accumulate 
+    args.train.scheduler.params['warmup_lr'] = 2*args.train.scheduler.params['warmup_lr']  * args.train.iters_to_accumulate 
+    args.train.scheduler.params['final_lr']  = 2*args.train.scheduler.params['final_lr']  * args.train.iters_to_accumulate
 
     # Number of iteration per epoch
     iter_per_epoch = len(train_loader) // args.train.iters_to_accumulate
@@ -85,14 +96,15 @@ def main(args):
 
         checkpoint = torch.load(args.resume.ckpt, map_location='cpu')
         model.load_state_dict(checkpoint['state_dict'])
-
+        start_epoch = 270
         start_epoch = checkpoint['epoch'] + 1
+        
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler = get_scheduler(scheduler_cfg=args.train.scheduler, optimizer=optimizer)
         scheduler.load_state_dict(checkpoint['scheduler'])
         # scheduler.iter = start_epoch * iter_per_epoch
         best_loss = checkpoint['best_loss']
-
+##########################################
         if args.resume.event is not None:
             logger.load_event(args.resume.event, checkpoint['epoch']-1)
 
@@ -128,7 +140,7 @@ def main(args):
 
         # Display
         global_progress.set_postfix(metrics)
-        logger.update_scalers(epoch_dict)
+        logger.update_scalers(epoch_dict) ######################### uncommeent
 
         # Save the checkpoint
         filepath = os.path.join(args.ckpt_dir, 'ckpt_{:03d}.pth'.format(epoch))

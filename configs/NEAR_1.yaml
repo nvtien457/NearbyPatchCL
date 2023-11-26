@@ -1,0 +1,84 @@
+name: OSupCon_1_128_30_nopre
+
+model:
+  name: supcon
+  backbone: resnet50
+  params:
+    head: mlp
+    feat_dim: 128
+
+dataset:
+  name: CATCH
+  params:
+    name: full
+    nearby: [0]
+
+aug:
+  name: supcon
+  params:
+    image_size: 128
+
+train:
+  batch_size: 128
+  iters_to_accumulate: 1
+  stop_epoch: 300
+  num_epochs: 400
+  save_interval: 2
+  knn_monitor: True
+  knn_interval: 5
+  knn_k: 200
+
+  criterion:
+    name: supcon
+    params:
+      temperature: 0.07
+  metrics: ['acc_1']
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 0.05
+      momentum: 0.9
+      weight_decay: 0.0001
+      
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 10
+      warmup_lr: 0.01
+      final_lr: 0.0001
+      constant_predictor_lr: False
+
+eval:
+  resume: False
+  batch_size: 512
+  num_epochs: 30
+  fold: 5
+  eval_from: ../checkpoints/OSupCon02_10_256/ckpt_best_149.pth
+  name: e30_p100
+  dataset: 100
+
+  optimizer:
+    name: sgd
+    params:
+      lr: 0.2
+      momentum: 0.9
+      weight_decay: 0
+  scheduler:
+    name: lr_scheduler
+    params:
+      warmup_epochs: 10
+      warmup_lr: 0.001
+      final_lr: 0.003
+
+seed: 11
+num_workers: 4
+pin_memory: True
+tensorboard: True
+matplotlib: True
+
+
+resume:
+  status: True
+  ckpt: ../checkpoints/OSupCon_1_128_20_nopre/ckpt_273.pth
+  event: ../logs/completed_OSupCon_1_128_20_nopre_0723155713/events.out.tfevents.1690127833.selab3

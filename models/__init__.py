@@ -1,5 +1,6 @@
 import torchvision.models as models
 import torch
+from torchvision.models import resnet50, ResNet50_Weights
 
 from .moco import MoCo
 from .simclr import SimCLR
@@ -8,12 +9,13 @@ from .simtriplet import SimTriplet
 from .byol import BYOL
 from .supcon import SupCon
 from .CLSA import CLSA
-# from .supervised import Supervised
+from .supervised import Supervised
 from .barlow_twins import BarlowTwins
 from .barlow_twins_nearby import BarlowTwins_nearby
 from .MICLe import MICLe
 
 def get_backbone(backbone, castrate=True):           #lq debug
+    # backbone = models.__dict__[backbone](weights=ResNet50_Weights.IMAGENET1K_V2)
     backbone = models.__dict__[backbone]()
 
     if castrate:
@@ -52,8 +54,8 @@ def get_model(model_cfg):
     elif model_cfg.name == 'clsa':
         model = CLSA(backbone=get_backbone(backbone=model_cfg.backbone), **model_cfg.params)
 
-    # elif model_cfg.name == 'supervised':
-    #     model = Supervised(backbone=get_backbone(backbone=model_cfg.backbone), **model_cfg.params)
+    elif model_cfg.name == 'supervised':
+        model = Supervised(backbone=get_backbone(backbone=model_cfg.backbone), **model_cfg.params)
 
     elif model_cfg.name == 'swav':
         raise NotImplementedError

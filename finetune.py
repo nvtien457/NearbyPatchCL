@@ -24,6 +24,8 @@ import torch.utils.data as data
 import csv
 import pathlib
 
+# import torch.multiprocessing
+# torch.multiprocessing.set_sharing_strategy('file_system')
 
 def main(args):
     # create log & ckpt

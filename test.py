@@ -8,6 +8,7 @@ from torchvision import models, transforms
 import torch.utils.data as data
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
+from models import get_model, get_backbone
 
 # from nets import *
 import time, os, copy, argparse
@@ -18,7 +19,7 @@ import sklearn
 from sklearn import preprocessing
 from sklearn.metrics import confusion_matrix, f1_score, balanced_accuracy_score, ConfusionMatrixDisplay
 from torchvision.models import resnet50, resnet18
-
+import seaborn as sns
 import re 
 import yaml
 from yaml import load, dump
@@ -134,10 +135,9 @@ def main(args):
     PERCENTAGE= args.eval.PERCENTAGE
     MODEL = f'{MODEL_PATH}/{MODEL_NAME}/ckpt_{CHECKPOINT_NUM}.pth'
     bs = 128
-        # Number of workers
-        # num_cpu = multiprocessing.cpu_count()
+    # Number of workers
+    # num_cpu = multiprocessing.cpu_count()
     num_cpu = 4
-    # num_cpu = 0
 
     # Print the train and validation data sizes
     print(MODEL)
@@ -151,62 +151,37 @@ def main(args):
     backbone.output_dim = backbone.fc.in_features
     backbone.fc = torch.nn.Identity()
     model = backbone
+    # backbone= get_backbone(backbone)
     save_dict = torch.load(MODEL, map_location='cpu')
+    # print(save_dict)
     model.load_state_dict({k[9:]: v for k, v in save_dict['state_dict'].items() if k.startswith('backbone.')},
                                 strict=True)
-    # model = torch.load(MODEL)
     model.eval()
     model = model.to(device)
     for percent in PERCENTAGE:
-        
-        # MODEL= args.eval.MODEL
-        # FINETUNE_NAME= args.eval.FINETUNE_NAME
-        FINETUNE_NAME= f'ckpt_{CHECKPOINT_NUM}_{percent}/finetune_e30_p{percent}'
+        EPOCH=args.eval.EPOCH
+       
+        FINETUNE_NAME= f'ckpt_{CHECKPOINT_NUM}_{percent}/finetune_e{EPOCH}_p{percent}'
         split= MODEL.split('/')
         FOLDER_PATH= MODEL.replace(f'/{split[-1]}','')
-        # FOLDER_PATH =  f"D:/DATA/model/SupCon_256/149"
-        # #finetune_e275_p100
-        # FINETUNE_NAME = 'ckpt_best_149_50/finetune_e30_p50_new'
-        # MODEL   = f"D:/DATA/model/SupCon_256/149/ckpt_best_149.pth"
-        # FOLDER_PATH =  f"D:/DATA/model/SimCLR_1024/274"
-        # #finetune_e275_p100
-        # FINETUNE_NAME = 'ckpt_274_100/finetune_e30_p100'
-        # MODEL   = f"D:/DATA/model/SimCLR_1024/274/ckpt_274.pth"
+        
         CLASSI0 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_0.pth"
         CLASSI1 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_1.pth"
         CLASSI2 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_2.pth"
         CLASSI3 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_3.pth"
         CLASSI4 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_4.pth"
+        if args.eval.manual == True:
+            CLASSI0 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_0/f0_tunelinear_{args.eval.fold[0]}.pth"
+            CLASSI1 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_1/f1_tunelinear_{args.eval.fold[1]}.pth"
+            CLASSI2 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_2/f2_tunelinear_{args.eval.fold[2]}.pth"
+            CLASSI3 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_3/f3_tunelinear_{args.eval.fold[3]}.pth"
+            CLASSI4 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_4/f4_tunelinear_{args.eval.fold[4]}.pth"
         TEST_PATH= '../CATCH//TEST_SET'
 
         ADD= MODEL.split('/')[-3]+'_'+FINETUNE_NAME.split('/')[0]
 
 
-        # Batch size
-        # bs = 32
-        # # Number of workers
-        # # num_cpu = multiprocessing.cpu_count()
-        # num_cpu = 2
-        # # num_cpu = 0
-
-        # # Print the train and validation data sizes
-        # print(MODEL)
-
-        # # Set default device as gpu, if available
-        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        # # Load the model for testing
-        # backbone = 'resnet50'
-        # backbone = eval(f"{backbone}()")
-        # backbone.output_dim = backbone.fc.in_features
-        # backbone.fc = torch.nn.Identity()
-        # model = backbone
-        # save_dict = torch.load(MODEL, map_location='cpu')
-        # model.load_state_dict({k[9:]: v for k, v in save_dict['state_dict'].items() if k.startswith('backbone.')},
-        #                             strict=True)
-        # # model = torch.load(MODEL)
-        # model.eval()
-        # model = model.to(device)
+        
         checkpoint0=  torch.load(CLASSI0)
         classifier0 = checkpoint0['classifier']
         classifier0.eval()
@@ -315,11 +290,7 @@ def main(args):
                     norm_prob_2 = preprocessing.normalize([out_prob2[pred_i]])
                     norm_prob_3 = preprocessing.normalize([out_prob3[pred_i]])
                     norm_prob_4 = preprocessing.normalize([out_prob4[pred_i]])
-                    # norm_prob_0 = softmax(out_prob0[pred_i])
-                    # norm_prob_1 = softmax(out_prob1[pred_i])
-                    # norm_prob_2 = softmax(out_prob2[pred_i])
-                    # norm_prob_3 = softmax(out_prob3[pred_i])
-                    # norm_prob_4 = softmax(out_prob4[pred_i])
+                   
                     norm_prob_all = norm_prob_0 + norm_prob_1 + norm_prob_2 + norm_prob_3 + norm_prob_4
                     preds[pred_i] = np.argmax(norm_prob_all)
 
@@ -354,15 +325,7 @@ def main(args):
             balance_acc = balanced_accuracy_score(true, pred)
             print('Best balance Acc: {:4f}'.format(balance_acc))
 
-            # print(np.unique(true), np.unique(pred))
-            # print(cm)
-            # print(dataset.class_to_idx.keys())
-
-            # disp = ConfusionMatrixDisplay.from_predictions(y_true=true, y_pred=pred, labels=list(dataset.class_to_idx.keys()))
-            # fig = plt.figure()
-            # disp.plot()
-            # plt.savefig(f'../checkpoints/{FOLDER_NAME}/{FINETUNE_NAME}/confusion_matrix/{subset}.jpg')
-
+            
             results['subset'].append(subset)
             results['f1'].append(f1)
             results['balanced_acc'].append(balance_acc)
@@ -371,11 +334,7 @@ def main(args):
             one_hot_pred = np.eye(num_classes)[np.array(pred, dtype=int).reshape(-1)]
             one_hot_true = np.eye(num_classes)[np.array(true, dtype=int).reshape(-1)]
 
-            # print(one_hot_pred[:5])
-            # print(one_hot_true[:5])
-            # print((one_hot_pred * one_hot_true)[:5])
-            # print(np.sum(one_hot_pred * one_hot_true, axis=0))
-            # print(np.sum(one_hot_true, axis=0))
+            
 
             compare = np.sum(one_hot_pred * one_hot_true, axis=0) / np.sum(one_hot_true, axis=0)
             classes = {
@@ -410,13 +369,24 @@ def main(args):
         # print(cm)
         # print(dataset.class_to_idx.keys())
         print(list(dataset.class_to_idx.keys()))
-        disp = ConfusionMatrixDisplay.from_predictions(y_true=total_true
-                                                    , y_pred=total_pred
-                                                    , display_labels=list(dataset.class_to_idx.keys())
-                                                    ,normalize='true'
+        cm_df=pd.DataFrame(cm)
+        cm_norm_row = cm_df.apply(lambda x: x/x.sum(), axis = 1)
+        fig, ax = plt.subplots()
+
+        disp = sns.heatmap(cm_norm_row, annot=True, fmt='.2f', cmap='Blues',
+                                                    cbar=False, square=True
+                                                    ,xticklabels=list(dataset.class_to_idx.keys())
+                                                    ,yticklabels=list(dataset.class_to_idx.keys())
+                                                    
                                                     )
-        fig = plt.figure()
-        disp.plot()
+        ax.set_xlabel('Predicted')
+        ax.set_ylabel('True')
+        ax.set_title('Confusion Matrix')
+
+        # Rotate the x-axis labels for better readability
+        plt.xticks(rotation=45)
+        # disp.plot()
+        fig.set_size_inches(11.5, 11.5)
         plt.savefig(f'../confusion_matrix/{MODEL_NAME}_{CHECKPOINT_NUM}_{percent}.jpg')
 
         results['subset'].append('TOTAL')
@@ -427,11 +397,7 @@ def main(args):
         one_hot_pred = np.eye(num_classes)[np.array(total_pred, dtype=int).reshape(-1)]
         one_hot_true = np.eye(num_classes)[np.array(total_true, dtype=int).reshape(-1)]
 
-        # print(one_hot_pred[:5])
-        # print(one_hot_true[:5])
-        # print((one_hot_pred * one_hot_true)[:5])
-        # print(np.sum(one_hot_pred * one_hot_true, axis=0))
-        # print(np.sum(one_hot_true, axis=0))
+        
 
         compare = np.sum(one_hot_pred * one_hot_true, axis=0) / np.sum(one_hot_true, axis=0)
 

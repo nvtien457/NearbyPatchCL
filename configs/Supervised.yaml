@@ -1,4 +1,4 @@
-name: Supervised_1_512
+name: Supervised_50_512
 
 model:
   name: supervised
@@ -9,7 +9,7 @@ model:
 dataset:
   name: finetune
   params:
-    name: 1
+    name: 50
 
 aug:
   name: single_simclr
@@ -22,7 +22,7 @@ train:
   stop_epoch: 100
   num_epochs: 100
   save_interval: 5
-  knn_monitor: True
+  knn_monitor: False
   knn_interval: 5
   knn_k: 200
 
@@ -52,7 +52,7 @@ seed: 19
 num_workers: 4
 tensorboard: True
 matplotlib: True
-
+pin_memory: True
 
 resume:
   status: False

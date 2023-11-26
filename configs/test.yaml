@@ -1,0 +1,8 @@
+name : testing
+
+eval :
+  MODEL_PATH: D:/DATA/model
+  MODEL_NAME: ORG_SupCon(k=2)
+  CHECKPOINT_NUM: 184
+  PERCENTAGE: [50]
+  dataset: TUMOR_TEST

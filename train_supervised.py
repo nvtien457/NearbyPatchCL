@@ -7,7 +7,7 @@ import torch
 import torchvision
 
 from models import get_model
-from datasets import get_dataset
+from datasets import get_dataset, ImageFolder
 from augmentations import get_aug
 from losses import get_criterion
 from optimizers import get_optimizer, get_scheduler
@@ -27,14 +27,14 @@ def main(args):
     )
     
     memory_loader = torch.utils.data.DataLoader(
-        dataset=torchvision.datasets.ImageFolder(root=args.mem_dir, transform=get_aug(args.aug, train=False)),
+        dataset=ImageFolder(root=args.mem_dir, transform=get_aug(args.aug, train=False)),
         shuffle=False,
         batch_size=args.train.batch_size,
         **args.dataloader_kwargs
     )
     
     val_loader = torch.utils.data.DataLoader(
-        dataset=torchvision.datasets.ImageFolder(root=args.val_dir, transform=get_aug(args.aug, train=False)),
+        dataset=ImageFolder(root=args.val_dir, transform=get_aug(args.aug, train=False)),
         shuffle=False,
         batch_size=args.train.batch_size,
         **args.dataloader_kwargs

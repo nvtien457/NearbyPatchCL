@@ -14,7 +14,7 @@ def byol_train(inputs, labels, model, criterion, args):
 
     (z0, p0), (z1, p1) = model(img0, img1)
 
-    loss = criterion(p0, z1) + criterion(p1, z0)
+    loss = 0.5 * (criterion(p0, z1) + criterion(p1, z0))
 
     result_dict = {
         'loss': loss
