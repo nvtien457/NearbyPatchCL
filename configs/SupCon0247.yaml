@@ -1,4 +1,4 @@
-name: SupCon0247_10_256
+name: OSupCon02_10_256
 
 model:
   name: supcon
@@ -19,9 +19,9 @@ aug:
     image_size: 128
 
 train:
-  batch_size: 64
-  iters_to_accumulate: 4
-  stop_epoch: 275
+  batch_size: 3
+  iters_to_accumulate: 1
+  stop_epoch: 150
   num_epochs: 400
   save_interval: 5
   knn_monitor: True
@@ -49,35 +49,15 @@ train:
       final_lr: 0.0001
       constant_predictor_lr: False
 
-eval:
-  batch_size: 256
-  num_epochs: 30
-  fold: 5
-  eval_from: ../checkpoints/Tien_SupCon07_10_256/ckpt_049.pth
-  name: e50_p10
-  dataset: 10
-
-  optimizer:
-    name: sgd
-    params:
-      lr: 0.1
-      momentum: 0.9
-      weight_decay: 0
-  scheduler:
-    name: lr_scheduler
-    params:
-      warmup_epochs: 10
-      warmup_lr: 0.01
-      final_lr: 0.0001
+eval: None
 
 seed: 11
-num_workers: 4
+num_workers: 2
 pin_memory: True
 tensorboard: True
 matplotlib: True
 
-
 resume:
-  status: True
-  ckpt: ../checkpoints/SupCon0247_10_256/ckpt_best_149.pth
-  event: ../logs/in-progress_SupCon0247_10_256_0705114220/events.out.tfevents.1688557340.selab4
+  status: False
+  ckpt: /content/drive/MyDrive/Notebook/checkpoints/OSupCon02_10_256/ckpt_best_006.pth
+  event: /content/drive/MyDrive/Notebook/logs/in-progress_OSupCon02_10_256_0708181530/events.out.tfevents.1688840130.b11b42f2c6f8

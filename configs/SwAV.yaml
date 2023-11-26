@@ -1,46 +1,55 @@
-name: MICLe_SimCLRAug_10_256
+name: SwAV_10_256
 
 model:
-  name: micle
+  name: swav
   backbone: resnet50
-  castrate: True
   params:
-    dim: 128
+    hidden_dim: 2048
+    proj_dim: 128
+    nmb_prototypes: 3000
+    normalize: True
 
 dataset:
-  name: CATCH
+  name: SCCATCH
   params:
     name: 10
     nearby: [0]
 
 aug:
-  name: single_simclr
+  name: swav
   params:
     image_size: 128
-    mean_std: [[0.4561, 0.2746, 0.1623], [0.2609, 0.1639, 0.0991]]
+    size_crops: [128]
+    nmb_crops: [1]
+    min_scale_crops: [0.08]
+    max_scale_crops: [1]
 
 train:
+  crops_for_assign: [0]
+
   batch_size: 256
   iters_to_accumulate: 1
   stop_epoch: 150
   num_epochs: 400
-  save_interval: 1
+  save_interval: 5
   knn_monitor: True
   knn_interval: 5
   knn_k: 200
 
   criterion:
-    name: supcon
+    name: swav
     params:
-      temperature: 0.1
+      temperature: 0.1 
+      epsilon: 0.5
+      sinkhorn_iterations: 3
   metrics: ['acc_1']
 
   optimizer:
     name: sgd
     params:
-      lr: 0.2
+      lr: 0.05
       momentum: 0.9
-      weight_decay: 0.000001
+      weight_decay: 0.0001
       
   scheduler:
     name: lr_scheduler
@@ -51,13 +60,15 @@ train:
       constant_predictor_lr: False
 
 eval: None
-seed: 17
+
+seed: 19
 num_workers: 2
 tensorboard: True
 matplotlib: True
 pin_memory: True
 
+
 resume:
   status: False
-  ckpt: /content/drive/MyDrive/Notebook/checkpoints/MICLe_10_256/ckpt_best_012.pth
-  event: /content/drive/MyDrive/Notebook/logs/in-progress_MICLe_10_256_0708175550/events.out.tfevents.1688838950.c7222913fca1
+  ckpt: ../checkpoints/SupCon0DB_20_256/ckpt_249.pth
+  event: ../logs/in-progress_SupCon0DB_20_256_0618132225/events.out.tfevents.1687094545.selab4

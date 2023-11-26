@@ -4,6 +4,7 @@ from .byol_aug import BYOLTransform
 from .supcon_aug import SupConTransform
 from .Multi_FixTransform import Multi_Fixtransform
 from .barlow_twins_aug import BarlowTwinsTransform
+from .swav_aug import SwAVTransform
 
 import torchvision
 import torchvision.transforms as T
@@ -69,6 +70,9 @@ def get_aug(aug_cfg, train=True):
 
         elif name == 'barlow_twins':
             augmentation = BarlowTwinsTransform(**aug_cfg.params)
+
+        elif name == 'swav':
+            augmentation = SwAVTransform(**aug_cfg.params)
 
         elif name == 'micle':
             augmentation = torchvision.transforms.Compose([

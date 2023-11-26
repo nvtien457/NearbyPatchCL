@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
 
 class MICLe(nn.Module):
     def __init__(self, backbone, dim=128):
@@ -18,4 +20,4 @@ class MICLe(nn.Module):
     def forward(self, x):
         h = self.backbone(x).flatten(start_dim=1)
         z = self.projection_head(h)
-        return z
+        return F.normalize(z, dim=1)
