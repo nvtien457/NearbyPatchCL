@@ -2,7 +2,8 @@ import torch.nn as nn
 
 from .NT_Xent import NT_Xent
 from .neg_cosine import Negative_CosineSimilarity
-from .supcon import SupConLoss, ModifySupConLoss, NNSupConLoss
+# from .supcon import SupConLoss, ModifySupConLoss, NNSupConLoss
+from .supcon import SupConLoss, ModifySupConLoss
 from .focal import FocalLoss
 from .swav import SwAVLoss
 
@@ -23,8 +24,8 @@ def get_criterion(criterion_cfg):
         return Negative_CosineSimilarity
 
     elif criterion_cfg.name == 'supcon':
-        # return SupConLoss(**criterion_cfg.params)
-        return NNSupConLoss(**criterion_cfg.params)
+        return SupConLoss(**criterion_cfg.params)
+        # return NNSupConLoss(**criterion_cfg.params)
 
     elif criterion_cfg.name == 'swav':
         return SwAVLoss(**criterion_cfg.params)

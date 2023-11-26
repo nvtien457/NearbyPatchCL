@@ -1,4 +1,6 @@
 """
+Source code: https://github.com/HobbitLong/SupContrast
+
 Author: Yonglong Tian (yonglong@mit.edu)
 Date: May 07, 2020
 """
@@ -94,89 +96,5 @@ class SupConLoss(nn.Module):
         # loss
         loss = - (self.temperature / self.base_temperature) * mean_log_prob_pos
         loss = loss.view(anchor_count, batch_size).mean()
-
-        return loss
-
-class ModifySupConLoss(nn.Module):
-    def __init__(self, temperature=0.07, eps=1e-6, threshold=1):
-        super(SupConLoss, self).__init__()
-        self.temperature = temperature
-        self.similarity_f = nn.CosineSimilarity(dim=2)
-        self.eps = eps
-        self.threshold = threshold
-
-    def neg_mask(self, batch_size):
-        mask = torch.ones((2*batch_size, 3*batch_size), dtype=bool)
-        mask = mask.fill_diagonal_(0)
-        for i in range(batch_size):
-            mask[i, batch_size+i] = 0
-            # mask[batch_size+i, 2*batch_size+i] = 0
-            # mask[i, 2*batch_size+i] = 0
-            mask[batch_size+i, i] = 0
-        mask[:,2*batch_size:] = 0
-        return mask
-
-    def forward(self, z1, z2, zn):
-        batch_size = z1.shape[0]                # B
-        nearby_size = zn.shape[0] // batch_size # N
-
-        za = torch.cat((z1, z2), dim=0)        # (2B x D)
-
-        # print(za.shape)
-
-        sim_aug_aug     = self.similarity_f(za.unsqueeze(1), za.unsqueeze(0))   # 2B x 2B
-        sim_aug_nearby  = self.similarity_f(za.unsqueeze(1), zn.unsqueeze(0))   # 2B x N*B
-        thres_mask = torch.ones_like(sim_aug_nearby) * self.threshold           # 2B x N*B
-        sim_aug_nearby = torch.minimum(sim_aug_nearby, thres_mask)
-
-        # print(torch.min(sim_aug_aug), torch.max(sim_aug_aug))
-        # print(torch.min(sim_aug_nearby), torch.max(sim_aug_nearby))
-
-        logit_aug_aug = torch.exp(torch.div(sim_aug_aug, self.temperature))     # 2B x 2B
-        logit_aug_nearby = torch.exp(torch.div(sim_aug_nearby, self.temperature))   # 2B x N*B
-
-        # print(torch.min(logit_aug_aug), torch.max(logit_aug_aug))
-        # print(torch.min(logit_aug_nearby), torch.max(logit_aug_nearby))
-
-        neg_mask = torch.ones_like(logit_aug_aug, dtype=bool).fill_diagonal_(0)
-        # for i in range(batch_size):           # cmt 2 đường chéo phụ -> 2B-1
-        #     neg_mask[i, batch_size+i] = 0
-        #     neg_mask[batch_size+i, i] = 0
-        negative_samples = logit_aug_aug[neg_mask].reshape(2*batch_size, -1)    # ( 2B x (2B-2) )
-
-        positive_samples_aug = torch.cat((
-            torch.diag(logit_aug_aug, batch_size),
-            torch.diag(logit_aug_aug, -batch_size)
-        ), dim=0).reshape(2*batch_size, -1)         # ( 2B x 1 )
-
-        positive_samples_nearby = torch.cat([torch.diag(logit_aug_nearby, i*batch_size) for i in range(-1, nearby_size)]).reshape(2*batch_size, -1)
-                                                    # ( 2B x N )
-
-        # print(positive_samples_aug.shape, positive_samples_nearby.shape, negative_samples.shape)
-
-        sum_neg = torch.sum(negative_samples, dim=1, keepdim=True)  # (2Bx1)
-
-        # print(sum_neg.shape)
-
-        prob_aug_aug = torch.div(positive_samples_aug, sum_neg + self.eps)                  # ( 2B x 1 )
-        prob_aug_nearby = torch.div(positive_samples_nearby, sum_neg + self.eps)            # ( 2B x N )
-
-        # print(prob_aug_aug.shape)
-        # print(prob_aug_nearby.shape)
-        
-        log_prob_aug = -torch.log(prob_aug_aug)                                 # ( 2B x 1 )
-        log_prob_nearby = -torch.log(prob_aug_nearby)                           # ( 2B x N )
-
-        # print(torch.min(log_prob_aug), torch.max(log_prob_aug))
-        # print(torch.min(log_prob_nearby), torch.max(log_prob_nearby))
-
-        mean_log_prob = torch.div(nearby_size * log_prob_aug + torch.sum(log_prob_nearby, dim=1, keepdim=True), 2*nearby_size)  # ( 2B x 1 )
-
-        # print(mean_log_prob.shape)
-        # print(torch.min(mean_log_prob), torch.max(mean_log_prob))
-
-        loss = torch.sum(mean_log_prob)                       
-
-        loss /= 2*batch_size
 
         return loss

@@ -1,3 +1,6 @@
+'''
+Source code: https://github.com/hrlblab/SimTriplet/blob/main/models/simsiam.py/D
+'''
 import torch.nn.functional as F
 
 def Negative_CosineSimilarity(p, z, version='simplified'): # negative cosine similarity
