@@ -104,9 +104,10 @@ If our code or paper is helpful to your work, please consider citing:
 
 ```bibtex
 @inproceedings{NearbyPatchCL,
-  title        = {NearbyPatchCL: Leveraging Nearby Patches for Self-Supervised Patch-Level Multi-Class Classification in Whole-Slide Images},
-  author       = {Le, Gia-Bao and Nguyen, Van-Tien and Le, Trung-Nghia and Tran, Minh-Triet},
-  year         = 2023,
+    title       = {NearbyPatchCL: Leveraging Nearby Patches for Self-Supervised Patch-Level Multi-Class Classification in Whole-Slide Images},
+    author      = {Le, Gia-Bao and Nguyen, Van-Tien and Le, Trung-Nghia and Tran, Minh-Triet},
+    year        = 2024,
+    book        = {MMM 2024 - The 30th International Conference on Multimedia Modeling}
 }
 ```
 
