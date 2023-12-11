@@ -23,9 +23,9 @@ train: None
 eval:
   resume: False
   batch_size: 64
-  num_epochs: 30
+  num_epochs: 15
   fold: 5
-  eval_from: ../checkpoints/SimSiam_10_256/ckpt_099.pth
+  eval_from: ../checkpoints/SimSiam/ckpt_400.pth
   name: e30_p1
   dataset: 1
 
