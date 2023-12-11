@@ -5,4 +5,4 @@ eval :
   MODEL_NAME: NearPATCH_CL(N=4,D=1)
   CHECKPOINT_NUM: 399
   PERCENTAGE: [100]
-  dataset: TEST
+  dataset: TEST_SET
