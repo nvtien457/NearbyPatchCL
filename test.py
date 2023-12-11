@@ -22,28 +22,7 @@ from torchvision.models import resnet50, resnet18
 import re 
 import yaml
 from yaml import load, dump
-# FOLDER_PATH =  f"D:/DATA/model/SupCon_256/274"
-# #finetune_e275_p100
-# FINETUNE_NAME = 'ckpt_274_5/finetune_e30_p5_new'
-# MODEL   = f"D:/DATA/model/SupCon_256/274/ckpt_274.pth"
-# split= MODEL.split('/')
-# FOLDER_PATH= MODEL.replace(f'/{split[-1]}','')
-# # FOLDER_PATH =  f"D:/DATA/model/SupCon_256/149"
-# # #finetune_e275_p100
-# # FINETUNE_NAME = 'ckpt_best_149_50/finetune_e30_p50_new'
-# # MODEL   = f"D:/DATA/model/SupCon_256/149/ckpt_best_149.pth"
-# # FOLDER_PATH =  f"D:/DATA/model/SimCLR_1024/274"
-# # #finetune_e275_p100
-# # FINETUNE_NAME = 'ckpt_274_100/finetune_e30_p100'
-# # MODEL   = f"D:/DATA/model/SimCLR_1024/274/ckpt_274.pth"
-# CLASSI0 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_0.pth"
-# CLASSI1 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_1.pth"
-# CLASSI2 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_2.pth"
-# CLASSI3 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_3.pth"
-# CLASSI4 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_4.pth"
-# TEST_PATH= 'E:/medical/Skin_Cancer_Detection_WSI-main/cheat/TEST_SET'
 
-# ADD= MODEL.split('/')[-3]+'_'+FINETUNE_NAME.split('/')[0]
 class Namespace(object):
     def __init__(self, somedict):
         for key, value in somedict.items():
@@ -164,14 +143,7 @@ def main(args):
         FINETUNE_NAME= f'ckpt_{CHECKPOINT_NUM}_{percent}/finetune_e30_p{percent}'
         split= MODEL.split('/')
         FOLDER_PATH= MODEL.replace(f'/{split[-1]}','')
-        # FOLDER_PATH =  f"D:/DATA/model/SupCon_256/149"
-        # #finetune_e275_p100
-        # FINETUNE_NAME = 'ckpt_best_149_50/finetune_e30_p50_new'
-        # MODEL   = f"D:/DATA/model/SupCon_256/149/ckpt_best_149.pth"
-        # FOLDER_PATH =  f"D:/DATA/model/SimCLR_1024/274"
-        # #finetune_e275_p100
-        # FINETUNE_NAME = 'ckpt_274_100/finetune_e30_p100'
-        # MODEL   = f"D:/DATA/model/SimCLR_1024/274/ckpt_274.pth"
+        
         CLASSI0 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_0.pth"
         CLASSI1 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_1.pth"
         CLASSI2 = f"{FOLDER_PATH}/{FINETUNE_NAME}/fold_2.pth"
@@ -182,31 +154,7 @@ def main(args):
         ADD= MODEL.split('/')[-3]+'_'+FINETUNE_NAME.split('/')[0]
 
 
-        # Batch size
-        # bs = 32
-        # # Number of workers
-        # # num_cpu = multiprocessing.cpu_count()
-        # num_cpu = 2
-        # # num_cpu = 0
-
-        # # Print the train and validation data sizes
-        # print(MODEL)
-
-        # # Set default device as gpu, if available
-        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        # # Load the model for testing
-        # backbone = 'resnet50'
-        # backbone = eval(f"{backbone}()")
-        # backbone.output_dim = backbone.fc.in_features
-        # backbone.fc = torch.nn.Identity()
-        # model = backbone
-        # save_dict = torch.load(MODEL, map_location='cpu')
-        # model.load_state_dict({k[9:]: v for k, v in save_dict['state_dict'].items() if k.startswith('backbone.')},
-        #                             strict=True)
-        # # model = torch.load(MODEL)
-        # model.eval()
-        # model = model.to(device)
+        
         checkpoint0=  torch.load(CLASSI0)
         classifier0 = checkpoint0['classifier']
         classifier0.eval()
