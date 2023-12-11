@@ -1,7 +1,7 @@
 
 from tools.functions import *
 DATA_PATH = 'D:/DATA/TRAIN/TUMOR' # Folder contents train patches
-SVS_PATH ='F:/Data/TRAIN' # Folder contents raw svs for trainning
+SVS_PATH ='F:/Data/RAW_TRAIN_SVS' # Folder contents raw svs for trainning
 # 
 
 train_list= os.listdir(SVS_PATH)
