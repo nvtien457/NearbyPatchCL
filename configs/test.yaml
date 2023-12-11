@@ -2,7 +2,7 @@ name : testing
 
 eval :
   MODEL_PATH: D:/DATA/model
-  MODEL_NAME: ORG_SupCon(k=2)
-  CHECKPOINT_NUM: 184
-  PERCENTAGE: [50]
-  dataset: TUMOR_TEST
+  MODEL_NAME: NearPATCH_CL(N=4,D=1)
+  CHECKPOINT_NUM: 399
+  PERCENTAGE: [100]
+  dataset: TEST
