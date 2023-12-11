@@ -1,6 +1,6 @@
 
 from tools.functions import *
-DATA_PATH = 'D:/DATA/TRAIN/TUMORT' # Folder contents train patches
+DATA_PATH = 'D:/DATA/TRAIN/TUMOR' # Folder contents train patches
 SVS_PATH ='F:/Data/TRAIN' # Folder contents raw svs for trainning
 # 
 
