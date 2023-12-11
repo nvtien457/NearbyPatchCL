@@ -36,7 +36,7 @@ bash scripts/install.sh
 
 Dataset is cropped from Tissue Slide Images provided by [CATCH dataset]():
 
-+ [Train set](https://studenthcmusedu-my.sharepoint.com/:f:/g/personal/19125079_student_hcmus_edu_vn/El5OuDuOcZ9OsH7Og4n06B0Bxx2q5P3riwhB6Qhc_ezr1w?e=HBewsU)
++ [Train set](https://1drv.ms/f/s!AiJYp4kpGfDdgYxWIaBluCqv8GiwLg?e=vByJMQ)
 
 + [Finetune set](https://studenthcmusedu-my.sharepoint.com/:u:/g/personal/19125079_student_hcmus_edu_vn/EYM3yOR5X69AhvlbYIW-FeIB1X0BOYhKWXHWjJg7ElI-hg?e=wvgjjo)
 
