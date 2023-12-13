@@ -1,4 +1,7 @@
-# Contrastive-Learning
+# Nearby Patch Contrastive-Learning
+
+## Overview
+This repository hosts the official PyTorch implementation of NearbyPatchCL: Leveraging Nearby Patches for Self-Supervised Patch-Level Multi-Class Classification in Whole-Slide Images as presented in the International Conference on Multimedia Modeling 2024.
 
 <div align="left">
 
