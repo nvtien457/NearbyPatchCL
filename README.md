@@ -2,7 +2,7 @@
 
 <div align="left">
 
-  [[`Paper`]([https://google.com](https://arxiv.org/abs/2312.07489))]
+  [[`ArXiv Paper`](https://arxiv.org/abs/2312.07489)]
   [[`Colab Notebook`](https://colab.research.google.com/drive/1GQrt6WA9rFhiGy2nI5eE9fRTE7-5TdQR?usp=sharing)]
 
   <img src="./assets/architecture.jpg" class="left" width='100%'>
