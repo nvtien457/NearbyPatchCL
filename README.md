@@ -43,9 +43,9 @@ Dataset is cropped from Tissue Slide Images provided by [CATCH dataset]():
 
 + [Finetune set](https://studenthcmusedu-my.sharepoint.com/:u:/g/personal/19125079_student_hcmus_edu_vn/EYM3yOR5X69AhvlbYIW-FeIB1X0BOYhKWXHWjJg7ElI-hg?e=wvgjjo)
 
-+ [Test set](https://studenthcmusedu-my.sharepoint.com/:u:/g/personal/19125079_student_hcmus_edu_vn/Edn14ViXfSdGhw47RS5KXjkB3apJagBvU-Gn9TodKkq6yw?e=J8q2N8)
++ [Test set](https://studenthcmusedu-my.sharepoint.com/:u:/g/personal/19125079_student_hcmus_edu_vn/EaqQDD0YlfpMlIP0R5NrtW0BF9llwJfHplA9dcgNC41IgA?e=F4Wq0c)
 
-+ [Pretrain model](https://studenthcmusedu-my.sharepoint.com/:f:/g/personal/19125079_student_hcmus_edu_vn/Er_jhqx23DBFoKNO_e3OYSgBYcRjYAUOjHZLJ7IqPuvmOA?e=gSIAUb)
++ [Pretrain model](https://1drv.ms/u/c/ddf0192989a75822/ESJYp4kpGfAggN07RQAAAAABcUqBZtUjF6TQV90jxThblQ?e=mv90sL)
 
 <!-- | | Center | Nearby |
 | :- | --: | --: |
